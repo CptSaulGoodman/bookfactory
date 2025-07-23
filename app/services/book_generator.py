@@ -3,15 +3,7 @@
 from app.services.ai_service import AIService
 from app.services.vector_store import VectorStoreService
 from app.prompts.templates import get_template
-from app.config.settings import (
-    DEFAULT_WORLD_PARAMS,
-    DEFAULT_STORY_BITS,
-    DEFAULT_NUMBER_OF_CHAPTERS,
-    DEFAULT_NUMBER_OF_CHARS,
-    DEFAULT_NUMBER_OF_MAIN_CHARS,
-    DEFAULT_NUMBER_OF_SUPPORT_CHARS,
-    DEFAULT_NUMBER_OF_EVENTS
-)
+from app import config
 from app.models.book import Book
 from app.models.character import CharacterCollection
 
@@ -25,9 +17,9 @@ class BookGenerator:
     
     def generate_initial_concept(
         self,
-        number_of_chapters: int = DEFAULT_NUMBER_OF_CHAPTERS,
-        world_params: str = DEFAULT_WORLD_PARAMS,
-        story_bits: str = DEFAULT_STORY_BITS
+        number_of_chapters: int = config.DEFAULT_NUMBER_OF_CHAPTERS,
+        world_params: str = config.DEFAULT_WORLD_PARAMS,
+        story_bits: str = config.DEFAULT_STORY_BITS
     ) -> str:
         """Generate initial book concept."""
         characters_to_use = self.vector_store.get_character_context()
@@ -42,11 +34,11 @@ class BookGenerator:
     
     def generate_character_sheet(
         self,
-        number_of_chars: int = DEFAULT_NUMBER_OF_CHARS,
-        number_of_main: int = DEFAULT_NUMBER_OF_MAIN_CHARS,
-        number_of_support: int = DEFAULT_NUMBER_OF_SUPPORT_CHARS,
-        world_params: str = DEFAULT_WORLD_PARAMS,
-        story_bits: str = DEFAULT_STORY_BITS
+        number_of_chars: int = config.DEFAULT_NUMBER_OF_CHARS,
+        number_of_main: int = config.DEFAULT_NUMBER_OF_MAIN_CHARS,
+        number_of_support: int = config.DEFAULT_NUMBER_OF_SUPPORT_CHARS,
+        world_params: str = config.DEFAULT_WORLD_PARAMS,
+        story_bits: str = config.DEFAULT_STORY_BITS
     ) -> str:
         """Generate character sheets."""
         return self.ai_service.generate_response(
@@ -61,9 +53,9 @@ class BookGenerator:
     def generate_events(
         self,
         chapter_desc: str,
-        number_of_events: int = DEFAULT_NUMBER_OF_EVENTS,
-        world_params: str = DEFAULT_WORLD_PARAMS,
-        story_bits: str = DEFAULT_STORY_BITS
+        number_of_events: int = config.DEFAULT_NUMBER_OF_EVENTS,
+        world_params: str = config.DEFAULT_WORLD_PARAMS,
+        story_bits: str = config.DEFAULT_STORY_BITS
     ) -> str:
         """Generate events for a chapter."""
         characters_to_use = self.vector_store.get_character_context()
@@ -83,8 +75,8 @@ class BookGenerator:
         total_chapters: int,
         chapter_desc: str,
         chapter_events: str,
-        world_params: str = DEFAULT_WORLD_PARAMS,
-        story_bits: str = DEFAULT_STORY_BITS
+        world_params: str = config.DEFAULT_WORLD_PARAMS,
+        story_bits: str = config.DEFAULT_STORY_BITS
     ) -> tuple[str, str]:
         """Generate a complete chapter in two parts."""
         characters_to_use = self.vector_store.get_character_context()

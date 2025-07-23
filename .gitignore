@@ -347,3 +347,7 @@ local_config.py
 secrets.json
 api_keys.json
 credentials.json
+
+# Project Specific
+book_db/
+app/config/settings_local.py

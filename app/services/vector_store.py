@@ -3,7 +3,7 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from app.config import settings
+from app import config
 from app.models.character import CharacterCollection
 
 
@@ -12,13 +12,13 @@ class VectorStoreService:
 
     def __init__(self):
         self.embeddings = OpenAIEmbeddings(
-            model=settings.EMBEDDING_MODEL,
-            api_key=settings.OPENAI_API_KEY,
-            base_url=settings.OPENAI_API_BASE,
+            model=config.EMBEDDING_MODEL,
+            api_key=config.OPENAI_API_KEY,
+            base_url=config.OPENAI_API_BASE,
         )
         self.vector_store = Chroma(
-            collection_name=settings.COLLECTION_NAME,
-            persist_directory=settings.DB_LOCATION,
+            collection_name=config.COLLECTION_NAME,
+            persist_directory=config.DB_LOCATION,
             embedding_function=self.embeddings,
         )
     
@@ -41,7 +41,7 @@ class VectorStoreService:
     def get_character_context(self, query: str = "Tell me more about the persons in this book") -> str:
         """Retrieve character context for AI prompts."""
         retriever = self.vector_store.as_retriever(
-            search_kwargs={"k": settings.RETRIEVER_K}
+            search_kwargs={"k": config.RETRIEVER_K}
         )
         docs = retriever.invoke(query)
         return "\n".join([doc.page_content for doc in docs])

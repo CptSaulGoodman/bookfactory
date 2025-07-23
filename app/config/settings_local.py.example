@@ -1,0 +1,12 @@
+# This is a sample local settings file.
+# To use it, copy it to 'settings_local.py' and uncomment the settings you want to override.
+#
+# WARNING: Do not commit 'settings_local.py' to your version control system.
+# It should be added to .gitignore to prevent accidental exposure of sensitive data.
+
+# Example of overriding the OpenAI API base URL.
+# This is useful if you are using a proxy or a local model server like Ollama.
+# OPENAI_API_BASE = "http://host.docker.internal:11434/v1"
+
+# Example of overriding the OpenAI API key.
+# OPENAI_API_KEY = "your-api-key-here"

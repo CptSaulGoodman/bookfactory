@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict, Any
 
-from app.config.settings import LANGUAGE
+from app import config
 
 
 class TemplateLoader:
@@ -107,7 +107,7 @@ def get_template(template_name: str, **kwargs) -> str:
     """
     try:
         body = _loader.get_template(template_name, **kwargs)
-        footer = _loader.get_template("language_footer", language=LANGUAGE)
+        footer = _loader.get_template("language_footer", language=config.LANGUAGE)
         return f"{body}\n{footer}"
     except FileNotFoundError as e:
         import logging

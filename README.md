@@ -55,10 +55,15 @@ app/
 
 4. **Configure your AI Provider**
 
-   Modify the settings in `app/config/settings.py` to point to your AI provider's API endpoint.
+   All configuration is located in `app/config/`. The default settings are in `settings.py`.
 
+   To add your local configuration (like API keys) without committing them, create a local settings file:
+   ```bash
+   cp app/config/settings_local.py.example app/config/settings_local.py
+   ```
+   Now edit `app/config/settings_local.py` and add your settings. For example:
    ```python
-   # Example for Ollama
+   # Example for Ollama in app/config/settings_local.py
    OPENAI_API_BASE = "http://localhost:11434/v1"
    OPENAI_API_KEY = "ollama"
    LLM_MODEL = "phi4:latest"
@@ -91,8 +96,9 @@ The application provides several generation functions that can be enabled in `ma
 
 ### Configuration
 
-Modify settings in `app/config/settings.py` to set up your AI provider and models.
-You can point the application to any OpenAI-compatible endpoint.
+All settings are configured in `app/config/settings.py`. For local customizations, especially for sensitive data like API keys, it is highly recommended to create a `app/config/settings_local.py` file. Any values set in `settings_local.py` will override the defaults in `settings.py`.
+
+Commonly configured settings include:
 
 - `OPENAI_API_BASE`: The base URL for the API endpoint.
 - `OPENAI_API_KEY`: The API key for your provider.
@@ -157,11 +163,3 @@ Modify model settings in `app/config/settings.py`
 2. Add type hints to all functions
 3. Include docstrings for new modules
 4. Test your changes before submitting
-
-## 📄 License
-
-[Add your license information here]
-
-## 🆘 Support
-
-For issues and questions, please [create an issue](link-to-issues) in the repository. 

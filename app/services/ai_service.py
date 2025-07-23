@@ -2,7 +2,7 @@
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from app.config import settings
+from app import config
 
 
 class AIService:
@@ -10,10 +10,10 @@ class AIService:
 
     def __init__(self):
         self.model = ChatOpenAI(
-            model=settings.LLM_MODEL,
+            model=config.LLM_MODEL,
             temperature=0,
-            api_key=settings.OPENAI_API_KEY,
-            base_url=settings.OPENAI_API_BASE,
+            api_key=config.OPENAI_API_KEY,
+            base_url=config.OPENAI_API_BASE,
         )
 
     def generate_response(self, prompt_text: str) -> str:
