@@ -49,16 +49,10 @@ class BookService:
         book = self.session.get(Book, book_id)
         
         # Call the generator
-        concept_json_string = self.book_generator.generate_initial_concept_for_book(book)
+        llm_concept = self.book_generator.generate_initial_concept_for_book(book)
         
-        # Parse and save the result
-        try:
-            book.llm_concept = json.loads(concept_json_string)
-        except json.JSONDecodeError:
-            # In a real application, we would log this error and
-            # potentially return a user-friendly error message.
-            # For now, we'll just set it to an empty dict.
-            book.llm_concept = {}
+        # Convert the Pydantic model to a dictionary for database storage
+        book.llm_concept = llm_concept.dict()
 
         book.status = "active"
         

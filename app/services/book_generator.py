@@ -5,8 +5,8 @@ from app.services.ai_service import AIService
 from app.services.vector_store import VectorStoreService
 from app.prompts.templates import get_template
 from app import config
-from app.models.data_models import CharacterCollection
-from app.models.models import Book # Add this import
+from app.models.data_models import BookConcept, CharacterCollection
+from app.models.models import Book
 
 
 class BookGenerator:
@@ -33,19 +33,18 @@ class BookGenerator:
                         characters_to_use=characters_to_use)
         )
     
-    def generate_initial_concept_for_book(self, book: Book) -> str: # New method
+    def generate_initial_concept_for_book(self, book: Book) -> BookConcept:
         """Generate initial book concept from a Book model."""
         # For now, character context is not used in this path
         # In a future step, this would fetch characters linked to the book
         characters_to_use = ""
-        
-        return self.ai_service.generate_response(
-            get_template("initial_concept",
-                        number_of_chapters=config.DEFAULT_NUMBER_OF_CHAPTERS,
-                        world_params=book.world_description,
-                        story_bits=book.user_prompt,
-                        characters_to_use=characters_to_use)
-        )
+        prompt = get_template("initial_concept",
+                                number_of_chapters=config.DEFAULT_NUMBER_OF_CHAPTERS,
+                                world_params=book.world_description,
+                                story_bits=book.user_prompt,
+                                characters_to_use=characters_to_use)
+
+        return self.ai_service.generate_response(prompt, model=BookConcept)
 
     def generate_character_sheet(
         self,

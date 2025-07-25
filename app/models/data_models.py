@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
-
+from pydantic import BaseModel, Field
 
 @dataclass
 class Event:
@@ -63,3 +63,21 @@ class CharacterCollection:
             if char.name == name:
                 return char
         return None
+
+class BookChapterEvent(BaseModel):
+    """Pydantic model for a book chapter event."""
+    event_title: str
+    event_description: str
+
+class BookChapter(BaseModel):
+    """Pydantic model for a book chapter."""
+    chapter_number: int
+    chapter_title: str
+    chapter_synopsis: str = Field(description="A brief synopsis of the chapter - making curious but without giving too much away.")
+    chapter_events: List[BookChapterEvent] = Field(description="A list of events that will happen in the chapter more detailed than the synopsis.")
+
+class BookConcept(BaseModel):
+    """Pydantic model for the structured LLM concept output."""
+    title: str
+    premise: str
+    chapters: List[BookChapter]
