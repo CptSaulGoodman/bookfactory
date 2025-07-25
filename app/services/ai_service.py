@@ -4,7 +4,9 @@ from typing import Optional, Type, TypeVar
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
+
 from app import config
+from app.prompts.templates import get_template
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -31,3 +33,13 @@ class AIService:
         else:
             result = self.model.invoke(prompt_text)
             return result.content
+
+    def generate_comment(self, user_input: str) -> str:
+        """Generate a funny comment based on user input."""
+        prompt = get_template("funny_comment", user_input=user_input)
+        return self.generate_response(prompt)
+
+    def generate_suggestion(self, context: str, field_name: str) -> str:
+        """Generate a creative suggestion for a field."""
+        prompt = get_template("field_suggestion", context=context, field_name=field_name)
+        return self.generate_response(prompt)

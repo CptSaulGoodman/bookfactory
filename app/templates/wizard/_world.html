@@ -1,6 +1,16 @@
-<form 
-    hx-put="/book/{{ book_id }}" 
-    hx-target="#wizard-content" 
+<div class="timeline-item-completed">
+    <h3>1. Your Story Idea</h3>
+    <p>"{{ book.user_prompt }}"</p>
+</div>
+<div class="timeline-item-completed">
+    <h3>2. Title</h3>
+    <p>"{{ book.title }}"</p>
+    <p class="ai-comment">🤖 {{ title_ai_comment }}</p>
+</div>
+
+<form
+    hx-put="/book/{{ book.id }}"
+    hx-target="#wizard-content"
     hx-swap="innerHTML">
     <label for="world_description">Describe the world your story takes place in.</label>
     <textarea id="world_description" name="world_description" rows="4" required></textarea>

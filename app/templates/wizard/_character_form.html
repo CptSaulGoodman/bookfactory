@@ -1,0 +1,13 @@
+<div class="character-form">
+    <hr>
+    <label>Name:
+        <input type="text" name="name_{{ character_index }}" required>
+    </label>
+    <label>Description:
+        <textarea name="description_{{ character_index }}" rows="3" required></textarea>
+    </label>
+    <label>
+        <input type="radio" name="is_protagonist" value="{{ character_index }}" {% if character_index == 0 %}checked{% endif %}>
+        Is Protagonist
+    </label>
+</div>

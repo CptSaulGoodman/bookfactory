@@ -1,8 +1,8 @@
 # app/services/book_service.py
 import json # Add this import
 from sqlmodel import Session
-from app.models.models import Book
-from app.services.ai_service import AIService # Add this import
+from app.models.models import Book, Character
+from app.services.ai_service import AIService
 from app.services.book_generator import BookGenerator
 
 class BookService:
@@ -23,9 +23,9 @@ class BookService:
         return book
 
     def update_book_draft(
-        self, 
-        book_id: int, 
-        title: str | None = None, 
+        self,
+        book_id: int,
+        title: str | None = None,
         world_description: str | None = None
     ) -> Book:
         """
@@ -41,7 +41,29 @@ class BookService:
         self.session.commit()
         self.session.refresh(book)
         return book
+
+    def save_characters_for_book(self, book_id: int, characters_data: list[dict]) -> None:
+        """
+        Saves character data for a specific book.
+        """
+        book = self.session.get(Book, book_id)
         
+        # Simple validation: Ensure only one protagonist
+        protagonist_count = sum(1 for char in characters_data if char.get('is_protagonist'))
+        if protagonist_count != 1:
+            raise ValueError("There must be exactly one protagonist.")
+
+        for char_data in characters_data:
+            character = Character(
+                name=char_data['name'],
+                description=char_data['description'],
+                is_protagonist=char_data.get('is_protagonist', False),
+                book_id=book.id
+            )
+            self.session.add(character)
+        
+        self.session.commit()
+
     def finalize_and_generate_book(self, book_id: int) -> Book:
         """
         Marks the book as 'active' and triggers the generation process.
