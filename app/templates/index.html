@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Factory</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <div class="htmx-indicator spinner"></div>
+    <main>
+        <h1>Book Factory</h1>
+        <section id="wizard-content">
+            <h2>Let's create a new book!</h2>
+            <form
+                hx-post="/book"
+                hx-target="#wizard-content"
+                hx-swap="innerHTML"
+                hx-indicator=".spinner">
+                <label for="user_prompt">What is your story about?</label>
+                <textarea
+                    id="user_prompt"
+                    name="user_prompt"
+                    rows="4"
+                    required
+                    placeholder="e.g., A brave knight who is afraid of the dark."></textarea>
+                <button type="submit">Start My Book</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

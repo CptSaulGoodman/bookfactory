@@ -1,0 +1,8 @@
+<form 
+    hx-put="/book/{{ book_id }}" 
+    hx-target="#wizard-content" 
+    hx-swap="innerHTML">
+    <label for="world_description">Describe the world your story takes place in.</label>
+    <textarea id="world_description" name="world_description" rows="4" required></textarea>
+    <button type="submit">Next: Create Characters</button>
+</form>

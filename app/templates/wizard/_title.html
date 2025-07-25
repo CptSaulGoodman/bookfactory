@@ -1,0 +1,8 @@
+<form 
+    hx-put="/book/{{ book_id }}" 
+    hx-target="#wizard-content" 
+    hx-swap="innerHTML">
+    <label for="title">What is the title of your book?</label>
+    <input type="text" id="title" name="title" required>
+    <button type="submit">Next: Describe Your World</button>
+</form>

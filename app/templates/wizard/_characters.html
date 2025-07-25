@@ -1,0 +1,9 @@
+<h3>Character Creation</h3>
+<p>The character creation interface will be built here in a future step.</p>
+<form
+    hx-post="/book/{{ book_id }}/generate"
+    hx-trigger="submit"
+    hx-target="body"
+    hx-indicator=".spinner">
+    <button type="submit">Finish and Generate My Book!</button>
+</form>

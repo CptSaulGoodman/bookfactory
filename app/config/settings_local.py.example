@@ -10,3 +10,4 @@
 
 # Example of overriding the OpenAI API key.
 # OPENAI_API_KEY = "your-api-key-here"
+# DATABASE_URL = "sqlite:///bookfactory.db"

@@ -12,6 +12,15 @@ OPENAI_API_KEY = "ollama"  # For Ollama, the API key can be any string
 LLM_MODEL = "gemma-3-4b"
 EMBEDDING_MODEL = "embedder"
 
+# Database Configuration
+DATABASE_URL = "sqlite:///book_db/bookfactory.db"
+
+# Vector Database Configuration
+DB_LOCATION = "book_db"
+COLLECTION_NAME = "characters"
+RETRIEVER_K = 5
+
+
 # Vector Database Configuration
 DB_LOCATION = "book_db"
 COLLECTION_NAME = "characters"
