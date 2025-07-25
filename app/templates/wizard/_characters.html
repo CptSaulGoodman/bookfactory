@@ -5,23 +5,23 @@
         <form id="characters-form" hx-put="/book/{{ book.id }}/characters" hx-target="#wizard-content" hx-indicator=".spinner">
 
             <div class="timeline-item-completed">
-                <h3>1. Your Story Idea</h3>
+                <h3>{{ _('wizard_timeline_story_idea') }}</h3>
                 <p>"{{ book.user_prompt }}"</p>
             </div>
             <div class="timeline-item-completed">
-                <h3>2. Title</h3>
+                <h3>{{ _('wizard_timeline_title') }}</h3>
                 <p>"{{ book.title }}"</p>
             </div>
             <div class="timeline-item-completed">
-                <h3>3. World Setting</h3>
+                <h3>{{ _('wizard_timeline_world_setting') }}</h3>
                 <p>"{{ book.world_description }}"</p>
                 {% if ai_comment %}
                     {% include "wizard/_comment.html" %}
                 {% endif %}
             </div>
         
-            <h3>Let's create your characters!</h3>
-            <p>Add at least one character. Choose one of them to be the protagonist of your story.</p>
+            <h3>{{ _('characters_title') }}</h3>
+            <p>{{ _('characters_description') }}</p>
                 
             <div id="character-forms-container">
                 {% include "wizard/_character_form.html" with context %}
@@ -35,10 +35,10 @@
                     hx-target="#character-forms-container"
                     hx-swap="beforeend"
                     class="secondary">
-                + Add Character
+                {{ _('characters_add_button') }}
             </button>
             
-            <button type="submit">Finish and Generate My Book!</button>
+            <button type="submit">{{ _('wizard_next_button') }}</button>
 
         </form>
     </div>

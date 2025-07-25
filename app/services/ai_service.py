@@ -34,9 +34,16 @@ class AIService:
             result = self.model.invoke(prompt_text)
             return result.content
 
-    def generate_comment(self, user_input: str) -> str:
+    def generate_comment(self, user_story_idea: str,
+            user_book_title: str = "Not defined yet", 
+            user_world_description: str = "Not defined yet", 
+            user_characters: str = "Not defined yet") -> str:
         """Generate a funny comment based on user input."""
-        prompt = get_template("funny_comment", user_input=user_input)
+        prompt = get_template("funny_comment", 
+            user_story_idea=user_story_idea, 
+            user_book_title=user_book_title, 
+            user_world_description=user_world_description, 
+            user_characters=user_characters )
         return self.generate_response(prompt)
 
     def generate_suggestion(self, context: str, field_name: str) -> str:

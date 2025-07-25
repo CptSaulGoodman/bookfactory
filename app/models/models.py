@@ -9,6 +9,7 @@ class Book(SQLModel, table=True):
     title: Optional[str] = None
     user_prompt: Optional[str] = None
     world_description: Optional[str] = None
+    chapters_count: Optional[int] = None
     llm_concept: Optional[dict] = Field(default=None, sa_column=Column(JSON))
     status: str = "draft"
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

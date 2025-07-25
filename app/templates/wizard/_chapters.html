@@ -1,0 +1,39 @@
+<div id="wizard-content" hx-swap-oob="true">
+
+    <div class="timeline-item-active">
+
+
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_story_idea') }}</h3>
+                <p>"{{ book.user_prompt }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_title') }}</h3>
+                <p>"{{ book.title }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_world_setting') }}</h3>
+                <p>"{{ book.world_description }}"</p>
+            </div>
+        
+            <h3>{{ _('characters_title') }}</h3>
+            <p>{{ _('characters_description') }}</p>
+                {% if ai_comment %}
+                    {% include "wizard/_comment.html" %}
+                {% endif %}
+
+            <h3>{{ _('chapters_title') }}</h3>
+            <p>{{ _('chapters_description') }}</p>
+
+            
+            <form
+            hx-put="/book/{{ book.id }}/chapters"
+            hx-target="#wizard-content"
+            hx-swap="innerHTML">
+                <label for="chapters_count">{{ _('chapters_count_label') }}</label>
+                <input class="input" type="number" id="chapters_count" name="chapters_count" value="{{ book.chapters_count }}" required>
+                <button type="submit">{{ _('chapters_finish_button') }}</button>
+            </form>
+
+    </div>
+</div>

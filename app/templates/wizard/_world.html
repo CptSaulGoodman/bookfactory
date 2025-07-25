@@ -1,11 +1,11 @@
 <div id="wizard-content" hx-swap-oob="true">
     <div class="timeline-item-active">
         <div class="timeline-item-completed">
-            <h3>1. Your Story Idea</h3>
+            <h3>{{ _('wizard_timeline_story_idea') }}</h3>
             <p>"{{ book.user_prompt }}"</p>
         </div>
         <div class="timeline-item-completed">
-            <h3>2. Title</h3>
+            <h3>{{ _('wizard_timeline_title') }}</h3>
             <p>"{{ book.title }}"</p>
             {% if ai_comment %}
                 {% include "wizard/_comment.html" %}
@@ -16,9 +16,9 @@
             hx-put="/book/{{ book.id }}"
             hx-target="#wizard-content"
             hx-swap="innerHTML">
-            <label for="world_description">Now, describe the world your story takes place in.</label>
-            <textarea class="textarea" id="world_description" name="world_description" rows="4" required></textarea>
-            <button type="submit">Next</button>
+            <label for="world_description">{{ _('world_prompt_label') }}</label>
+            <textarea class="textarea" id="world_description" name="world_description" rows="4" required>{{ book.world_description }}</textarea>
+            <button type="submit">{{ _('wizard_next_button') }}</button>
         </form>
     </div>
 </div>
