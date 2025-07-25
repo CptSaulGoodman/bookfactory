@@ -17,12 +17,16 @@
         <h2>{{ subtitle }}</h2>
         <p><em>{{ synopsis }}</em></p>
         <p><strong>{{ _('characters') }}:</strong></p>
-
+        
             <ul>
                 {% for character in characters %}
                     <li>{{ character }}</li>
                 {% endfor %}
             </ul>
+        
+        <p><hr></p>
+        
+        <p><strong>{{ _('chapters') }}:</strong></p>
 
             {% for chapter in chapters %}
                 <h4>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
