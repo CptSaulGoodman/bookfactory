@@ -35,11 +35,19 @@ class BookGenerator:
     
     def generate_initial_concept_for_book(self, book: Book) -> BookConcept:
         """Generate initial book concept from a Book model."""
-        # For now, character context is not used in this path
-        # In a future step, this would fetch characters linked to the book
+        # Extract character information from the book model
         characters_to_use = ""
+        if book.characters:
+            character_descriptions = []
+            for character in book.characters:
+                char_type = "protagonist" if character.is_protagonist else "supporting"
+                character_descriptions.append(
+                    f"name: {character.name}, role: {char_type}, summary: {character.description}"
+                )
+            characters_to_use = "\n".join(character_descriptions)
+        
         prompt = get_template("initial_concept",
-                                number_of_chapters=config.DEFAULT_NUMBER_OF_CHAPTERS,
+                                number_of_chapters=book.chapters_count,
                                 world_params=book.world_description,
                                 story_bits=book.user_prompt,
                                 characters_to_use=characters_to_use)

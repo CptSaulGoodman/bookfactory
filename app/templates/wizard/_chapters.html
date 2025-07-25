@@ -32,6 +32,7 @@
             hx-swap="innerHTML">
                 <label for="chapters_count">{{ _('chapters_count_label') }}</label>
                 <input class="input" type="number" id="chapters_count" name="chapters_count" value="{{ book.chapters_count }}" required>
+                <button type="button" hx-get="/book/{{ book.id }}/characters" hx-target="#wizard-content" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
                 <button type="submit">{{ _('chapters_finish_button') }}</button>
             </form>
 

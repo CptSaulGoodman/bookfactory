@@ -38,6 +38,7 @@
                 {{ _('characters_add_button') }}
             </button>
             
+            <button type="button" hx-get="/book/{{ book.id }}/world" hx-target="#wizard-content" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
             <button type="submit">{{ _('wizard_next_button') }}</button>
 
         </form>

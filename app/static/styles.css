@@ -1,6 +1,31 @@
 /* app/static/styles.css */
+.pt-serif-regular {
+    font-family: "PT Serif", serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  .pt-serif-bold {
+    font-family: "PT Serif", serif;
+    font-weight: 700;
+    font-style: normal;
+  }
+  
+  .pt-serif-regular-italic {
+    font-family: "PT Serif", serif;
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  .pt-serif-bold-italic {
+    font-family: "PT Serif", serif;
+    font-weight: 700;
+    font-style: italic;
+  }
+  
+
 body {
-    font-family: sans-serif;
+    font-family: "PT Serif", serif;
     max-width: 600px;
     margin: auto;
     padding: 1rem;
@@ -33,3 +58,4 @@ body {
 form.htmx-request button {
     visibility: hidden;
 }
+

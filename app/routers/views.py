@@ -3,6 +3,8 @@ from fastapi import APIRouter, Request, Depends, Form, Header
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
+from app import config
+import json
 
 from app.database import get_session
 from app.services.book_service import BookService
@@ -26,7 +28,7 @@ def get_language(accept_language: str = Header(None)) -> str:
     return "en"  # Default language
 
 
-@router.get("/", response_class=HTMLResponse)
+@router.get("/book/new", response_class=HTMLResponse)
 async def get_home(request: Request, lang: str = Depends(get_language)):
     # This will render our main page.
     _ = translator.get_translator(lang)
@@ -58,6 +60,92 @@ async def create_book(
             "ai_comment": ai_comment,
             "_": _,
             "lang": lang,
+        },
+    )
+
+
+@router.get("/book/{book_id}/title", response_class=HTMLResponse)
+async def get_book_title(
+    request: Request,
+    book_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language),
+):
+    """
+    Renders the title step for an existing book.
+    """
+    book_service = BookService(session=session)
+    book = book_service.get_book(book_id)
+    ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
+    _ = translator.get_translator(lang)
+
+    return templates.TemplateResponse(
+        "wizard/_title.html",
+        {
+            "request": request,
+            "book": book,
+            "ai_comment": ai_comment,
+            "_": _,
+            "lang": lang,
+        },
+    )
+
+
+@router.get("/book/{book_id}/world", response_class=HTMLResponse)
+async def get_book_world(
+    request: Request,
+    book_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language),
+):
+    """
+    Renders the world step for an existing book.
+    """
+    book_service = BookService(session)
+    book = book_service.get_book(book_id)
+    ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt, user_book_title=book.title)
+    _ = translator.get_translator(lang)
+
+    return templates.TemplateResponse(
+        "wizard/_world.html",
+        {
+            "request": request,
+            "book": book,
+            "ai_comment": ai_comment,
+            "_": _,
+            "lang": lang,
+        },
+    )
+
+
+@router.get("/book/{book_id}/characters", response_class=HTMLResponse)
+async def get_book_characters(
+    request: Request,
+    book_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language),
+):
+    """
+    Renders the characters step for an existing book.
+    """
+    book_service = BookService(session)
+    book = book_service.get_book(book_id)
+    ai_comment = book_service.ai_service.generate_comment(
+        user_story_idea=book.user_prompt,
+        user_book_title=book.title,
+        user_world_description=book.world_description
+    )
+    _ = translator.get_translator(lang)
+
+    return templates.TemplateResponse(
+        "wizard/_characters.html",
+        {
+            "request": request,
+            "book": book,
+            "ai_comment": ai_comment,
+            "_": _,
+            "lang": lang,
+            "character_index": len(book.characters) if book.characters else 0,
         },
     )
 
@@ -172,9 +260,12 @@ async def save_characters(
                 "is_protagonist": i == protagonist_index
             })
 
+    # Save characters to the database
+    book_service.save_characters_for_book(book_id=book_id, characters_data=characters_data)
+
     ai_comment = book_service.ai_service.generate_comment(
-        user_story_idea=book.user_prompt, 
-        user_book_title=book.title, 
+        user_story_idea=book.user_prompt,
+        user_book_title=book.title,
         user_world_description=book.world_description,
         user_characters=characters_string
     )
@@ -187,7 +278,8 @@ async def save_characters(
             "book": book,
             "ai_comment": ai_comment,
             "_": _,
-            "lang": lang
+            "lang": lang,
+            "book.chapters_count": config.DEFAULT_NUMBER_OF_CHAPTERS
         },
     )
     
@@ -205,12 +297,79 @@ async def save_chapters(
     and then finalizes the book.
     """
     book_service = BookService(session=session)
-    form_data = await request.form()
-
     book_service.update_book(book_id=book_id, chapters_count=chapters_count)
+    
+    # Fetch the full book details for the processing screen
+    book = book_service.get_book(book_id)
+    _ = translator.get_translator(lang)
+
+    return templates.TemplateResponse(
+        "wizard/_processing.html",
+        {
+            "request": request,
+            "book": book,
+            "characters": book.characters,
+            "_": _,
+            "lang": lang,
+        },
+    )
+
+
+@router.post("/book/{book_id}/generate")
+async def generate_book(
+    book_id: int,
+    session: Session = Depends(get_session),
+):
+    """
+    Finalizes and generates the book, then returns a redirect response
+    for HTMX.
+    """
+    book_service = BookService(session=session)
     book_service.finalize_and_generate_book(book_id=book_id)
 
-    return RedirectResponse(
-        url=f"/book/{book_id}/read",
-        status_code=303
+    # HTMX needs a 200 OK with a HX-Redirect header for client-side redirect
+    return HTMLResponse(
+        content="",
+        status_code=200,
+        headers={"HX-Redirect": f"/book/{book_id}"},
+    )
+
+
+@router.get("/book/{book_id}", response_class=HTMLResponse)
+async def get_book_final(
+    request: Request,
+    book_id: int,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language),
+):
+    """
+    Displays the final, generated book.
+    """
+    book_service = BookService(session)
+    book = book_service.get_book(book_id)
+    _ = translator.get_translator(lang) 
+
+    characters = []
+    if book.characters:
+        for character in book.characters:
+            char_type = "protagonist" if character.is_protagonist else "supporting"
+            characters.append(
+                f"{character.name}, role: {char_type}, summary: {character.description}"
+            )
+
+    chapters = book.llm_concept.get("chapters")
+
+    # For now, just a simple confirmation. A full template is out of scope.
+    return templates.TemplateResponse(
+        "wizard/_final_book.html",
+        {
+            "request": request,
+            "book": book,
+            "_": _,
+            "lang": lang,
+            "characters": characters,
+            "subtitle": book.llm_concept.get("title"),
+            "synopsis": book.llm_concept.get("premise"),
+            "chapters": chapters,
+        },
     )
