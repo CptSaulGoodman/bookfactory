@@ -1,13 +1,21 @@
-<div class="timeline-item-completed">
-    <h3>1. Your Story Idea</h3>
-    <p>"{{ book.user_prompt }}"</p>
-</div>
+<div id="wizard-content" hx-swap-oob="true">
 
-<form
-    hx-put="/book/{{ book.id }}"
-    hx-target="#wizard-content"
-    hx-swap="innerHTML">
-    <label for="title">What is the title of your book?</label>
-    <input type="text" id="title" name="title" required>
-    <button type="submit">Next: Describe Your World</button>
-</form>
+    <div class="timeline-item-completed">
+        <h3>1. Your Story Idea</h3>
+        <p>"{{ book.user_prompt }}"</p>
+        {% if ai_comment %}
+            {% include "wizard/_comment.html" %}
+        {% endif %}
+    </div>
+
+    <div class="timeline-item-active">
+        <form
+            hx-put="/book/{{ book.id }}"
+            hx-target="#wizard-content"
+            hx-swap="innerHTML">
+            <label for="title">What’s the title of your book?</label>
+            <input class="input" type="text" id="title" name="title" required>
+            <button type="submit">Next</button>
+        </form>
+    </div>
+</div>

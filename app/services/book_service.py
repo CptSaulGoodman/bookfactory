@@ -12,6 +12,16 @@ class BookService:
         self.ai_service = AIService()
         self.book_generator = BookGenerator(ai_service=self.ai_service)
 
+    def get_book(self, book_id: int) -> "Book":
+        """
+        Retrievis a book by its ID.
+        """
+        book = self.session.get(Book, book_id)
+        if not book:
+            # In a real app, a more specific exception would be better.
+            raise ValueError(f"Book with ID {book_id} not found.")
+        return book
+
     def create_book_draft(self, user_prompt: str) -> Book:
         """
         Creates a new Book instance with a 'draft' status.
@@ -22,20 +32,14 @@ class BookService:
         self.session.refresh(book)
         return book
 
-    def update_book_draft(
-        self,
-        book_id: int,
-        title: str | None = None,
-        world_description: str | None = None
-    ) -> Book:
+    def update_book(self, book_id: int, **kwargs) -> Book:
         """
-        Updates the book draft with the provided details.
+        Updates a book with the given attributes.
         """
-        book = self.session.get(Book, book_id)
-        if title:
-            book.title = title
-        if world_description:
-            book.world_description = world_description
+        book = self.get_book(book_id)
+        for key, value in kwargs.items():
+            if hasattr(book, key) and value is not None:
+                setattr(book, key, value)
         
         self.session.add(book)
         self.session.commit()

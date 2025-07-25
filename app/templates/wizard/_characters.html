@@ -1,40 +1,45 @@
-<div class="timeline-item-completed">
-    <h3>1. Your Story Idea</h3>
-    <p>"{{ book.user_prompt }}"</p>
-</div>
-<div class="timeline-item-completed">
-    <h3>2. Title</h3>
-    <p>"{{ book.title }}"</p>
-    <p class="ai-comment">🤖 {{ title_ai_comment }}</p>
-</div>
-<div class="timeline-item-completed">
-    <h3>3. World Setting</h3>
-    <p>"{{ book.world_description }}"</p>
-    <p class="ai-comment">🤖 {{ world_ai_comment }}</p>
-</div>
-<h3>Character Creation</h3>
-<p>Add the characters for your story. Who is the protagonist? Who are the villains and allies?</p>
+<div id="wizard-content" hx-swap-oob="true">
 
-<form id="characters-form" hx-put="/book/{{ book.id }}/characters" hx-target="body" hx-indicator=".spinner">
-    
-    <div id="character-forms-container">
-        <!-- The first character form is loaded automatically -->
-        <div hx-get="/book/{{ book.id }}/characters/add?character_index=0" hx-trigger="load" hx-swap="outerHTML"></div>
+    <div class="timeline-item-active">
+
+        <form id="characters-form" hx-put="/book/{{ book.id }}/characters" hx-target="#wizard-content" hx-indicator=".spinner">
+
+            <div class="timeline-item-completed">
+                <h3>1. Your Story Idea</h3>
+                <p>"{{ book.user_prompt }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>2. Title</h3>
+                <p>"{{ book.title }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>3. World Setting</h3>
+                <p>"{{ book.world_description }}"</p>
+                {% if ai_comment %}
+                    {% include "wizard/_comment.html" %}
+                {% endif %}
+            </div>
+        
+            <h3>Let's create your characters!</h3>
+            <p>Add at least one character. Choose one of them to be the protagonist of your story.</p>
+                
+            <div id="character-forms-container">
+                {% include "wizard/_character_form.html" with context %}
+            </div>
+            
+            <button type="button"
+                    _="on click
+                        set my @hx-get to '/book/{{ book.id }}/characters/add?character_index=' + document.querySelectorAll('.character-form').length
+                      end"
+                    hx-get="/book/{{ book.id }}/characters/add?character_index=1"
+                    hx-target="#character-forms-container"
+                    hx-swap="beforeend"
+                    class="secondary">
+                + Add Character
+            </button>
+            
+            <button type="submit">Finish and Generate My Book!</button>
+
+        </form>
     </div>
-    
-    <button type="button"
-            _="on click
-                get the previous <div/> in me
-                set my @hx-get to '/book/{{ book.id }}/characters/add?character_index=' + ( a newfound
-                .character-form's length )
-              end"
-            hx-get="/book/{{ book.id }}/characters/add?character_index=1"
-            hx-target="#character-forms-container"
-            hx-swap="beforeend"
-            class="secondary">
-        + Add Character
-    </button>
-    
-    <button type="submit">Finish and Generate My Book!</button>
-
-</form>
+</div>

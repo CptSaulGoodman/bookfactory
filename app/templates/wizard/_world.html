@@ -1,18 +1,24 @@
-<div class="timeline-item-completed">
-    <h3>1. Your Story Idea</h3>
-    <p>"{{ book.user_prompt }}"</p>
-</div>
-<div class="timeline-item-completed">
-    <h3>2. Title</h3>
-    <p>"{{ book.title }}"</p>
-    <p class="ai-comment">🤖 {{ title_ai_comment }}</p>
-</div>
+<div id="wizard-content" hx-swap-oob="true">
+    <div class="timeline-item-active">
+        <div class="timeline-item-completed">
+            <h3>1. Your Story Idea</h3>
+            <p>"{{ book.user_prompt }}"</p>
+        </div>
+        <div class="timeline-item-completed">
+            <h3>2. Title</h3>
+            <p>"{{ book.title }}"</p>
+            {% if ai_comment %}
+                {% include "wizard/_comment.html" %}
+            {% endif %}
+        </div>
 
-<form
-    hx-put="/book/{{ book.id }}"
-    hx-target="#wizard-content"
-    hx-swap="innerHTML">
-    <label for="world_description">Describe the world your story takes place in.</label>
-    <textarea id="world_description" name="world_description" rows="4" required></textarea>
-    <button type="submit">Next: Create Characters</button>
-</form>
+        <form
+            hx-put="/book/{{ book.id }}"
+            hx-target="#wizard-content"
+            hx-swap="innerHTML">
+            <label for="world_description">Now, describe the world your story takes place in.</label>
+            <textarea class="textarea" id="world_description" name="world_description" rows="4" required></textarea>
+            <button type="submit">Next</button>
+        </form>
+    </div>
+</div>
