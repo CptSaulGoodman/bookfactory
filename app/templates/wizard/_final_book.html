@@ -1,37 +1,25 @@
-<!DOCTYPE html>
-<html lang="{{ lang | default('en') }}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('app_title') }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">    
-    <link rel="stylesheet" href="/static/styles.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-</head>
-<body>
-    <div class="htmx-indicator spinner"></div>
-    <main>
-        <h1>{{ book.title }}</h1>
-        <h2>{{ subtitle }}</h2>
-        <p><em>{{ synopsis }}</em></p>
-        <p><strong>{{ _('characters') }}:</strong></p>
-        
-            <ul>
-                {% for character in characters %}
-                    <li>{{ character }}</li>
-                {% endfor %}
-            </ul>
-        
-        <p><hr></p>
-        
-        <p><strong>{{ _('chapters') }}:</strong></p>
+{% extends "base.html" %}
 
-            {% for chapter in chapters %}
-                <h4>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
-                <p>{{ chapter.chapter_synopsis }}</p>
-            {% endfor %}
-    </main>
-</body>
-</html>
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ book.title }}</h1>
+    <h2>{{ subtitle }}</h2>
+    <p><em>{{ synopsis }}</em></p>
+    <p><strong>{{ _('characters') }}:</strong></p>
+
+    <ul>
+        {% for character in characters %}
+            <li>{{ character }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><hr></p>
+
+    <p><strong>{{ _('chapters') }}:</strong></p>
+
+    {% for chapter in chapters %}
+        <h4>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
+        <p>{{ chapter.chapter_synopsis }}</p>
+    {% endfor %}
+{% endblock %}

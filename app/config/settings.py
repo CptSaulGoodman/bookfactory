@@ -1,7 +1,7 @@
 """Configuration settings for the book generation application."""
 
 # Language Configuration (the language the book will be written in)
-LANGUAGE = "English"
+LANGUAGE = "german"
 
 # AI Provider Configuration
 # Point this to any OpenAI-compatible API endpoint

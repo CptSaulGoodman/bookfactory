@@ -33,7 +33,7 @@ async def get_home(request: Request, lang: str = Depends(get_language)):
     # This will render our main page.
     _ = translator.get_translator(lang)
     return templates.TemplateResponse(
-        "index.html", {"request": request, "_": _, "lang": lang}
+        "wizard.html", {"request": request, "_": _, "lang": lang}
     )
 
 

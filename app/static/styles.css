@@ -288,9 +288,14 @@
     font-style: italic;
     font-weight: bolder;
     position: relative;
-    padding-left: var(--space-lg);
-    color: var(--color-sage);
+    padding-left: var(--sspace-lg);
+    background-color: var(--color-binding);    
     margin: var(--space-md) 0;
+    padding: var(--space-md);
+  }
+
+  .ai-comment p {
+    color: rgba(232, 224, 208, 0.5);
   }
   
   /* 5.5 Character Form */
