@@ -1,6 +1,7 @@
 # app/services/book_service.py
-import json # Add this import
-from sqlmodel import Session
+import json
+from typing import List, Optional
+from sqlmodel import Session, select
 from app.models.models import Book, Character
 from app.services.ai_service import AIService
 from app.services.book_generator import BookGenerator
@@ -21,6 +22,26 @@ class BookService:
             # In a real app, a more specific exception would be better.
             raise ValueError(f"Book with ID {book_id} not found.")
         return book
+
+    def get_books(self, statuses: Optional[List[str]] = None) -> List[Book]:
+        """
+        Retrieves books, optionally filtered by status, ordered by creation date.
+        """
+        query = select(Book).order_by(Book.created_at.desc())
+        if statuses:
+            query = query.where(Book.status.in_(statuses))
+        
+        books = self.session.exec(query).all()
+        return books
+
+    def delete_book(self, book_id: int) -> None:
+        """
+        Deletes a book by its ID.
+        """
+        book = self.session.get(Book, book_id)
+        if book:
+            self.session.delete(book)
+            self.session.commit()
 
     def create_book_draft(self, user_prompt: str) -> Book:
         """

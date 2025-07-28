@@ -1,5 +1,6 @@
 # app/routers/views.py
-from fastapi import APIRouter, Request, Depends, Form, Header
+from typing import List, Optional
+from fastapi import APIRouter, Request, Depends, Form, Header, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
@@ -26,6 +27,52 @@ def get_language(accept_language: str = Header(None)) -> str:
             if lang_code in translator.available_languages:
                 return lang_code
     return "en"  # Default language
+
+
+@router.get("/", response_class=HTMLResponse)
+async def get_root(request: Request, lang: str = Depends(get_language)):
+    """
+    Renders the main index page.
+    """
+    _ = translator.get_translator(lang)
+    # The new index.html will extend base.html, which provides the sidebar
+    return templates.TemplateResponse("index.html", {"request": request, "_": _, "lang": lang})
+
+
+@router.get("/bookshelf", response_class=HTMLResponse)
+async def get_bookshelf(
+    request: Request,
+    status: Optional[List[str]] = Query(None),
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language)
+):
+    """
+    Renders the bookshelf partial, filtering books by status.
+    """
+    if status is None:
+        status = ["active"]  # Default to 'active' books
+
+    book_service = BookService(session)
+    books = book_service.get_books(statuses=status)
+    _ = translator.get_translator(lang)
+
+    return templates.TemplateResponse(
+        "_bookshelf.html",
+        {"request": request, "books": books, "_": _, "lang": lang}
+    )
+
+
+@router.delete("/book/{book_id}", status_code=200)
+async def delete_book(
+    book_id: int,
+    session: Session = Depends(get_session),
+):
+    """
+    Deletes a book and returns an empty response for HTMX.
+    """
+    book_service = BookService(session)
+    book_service.delete_book(book_id=book_id)
+    return HTMLResponse(content="", status_code=200)
 
 
 @router.get("/book/new", response_class=HTMLResponse)

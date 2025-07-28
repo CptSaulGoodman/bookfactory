@@ -26,3 +26,10 @@ characters: "Charaktere"
 synopsis: "Zusammenfassung"
 chapter: "Kapitel"
 chapters: "Kapitel"
+
+# Bookshelf
+welcome_message: "Willkommen in der Buchfabrik!"
+bookshelf_title: "Mein Bücherregal"
+filter_active: "Aktiv"
+filter_drafts: "Entwürfe"
+book_delete: "Löschen"

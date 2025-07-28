@@ -146,6 +146,66 @@
     padding: 0;
   }
   
+  /* Container for the two-column layout */
+  .container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+  }
+  
+  /* Sidebar styles */
+  .sidebar {
+    width: 280px;
+    background-color: var(--color-parchment);
+    padding: var(--space-lg);
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: transform 0.3s ease;
+    box-shadow: 2px 0 5px var(--color-shadow);
+    z-index: 10;
+  }
+  
+  /* Collapsed sidebar */
+  .sidebar-collapsed {
+    transform: translateX(-240px);
+  }
+  
+  /* Toggle button for sidebar */
+  .sidebar-toggle {
+    position: absolute;
+    top: var(--space-md);
+    right: -15px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 5px var(--color-shadow);
+    z-index: 11;
+    border: none;
+  }
+  
+  /* Main content area */
+  .content {
+    flex: 1;
+    margin-left: 280px;
+    padding: var(--space-lg);
+    transition: margin-left 0.3s ease;
+  }
+  
+  /* Adjust content when sidebar is collapsed */
+  .sidebar-collapsed + .content {
+    margin-left: 40px;
+  }
+  
   main {
     width: 100%;
     max-width: 100%;
@@ -425,7 +485,151 @@
     }
   }
   
-  /* 6.2 Book Display */
+  /* 6.2 Bookshelf Styles */
+  .bookshelf {
+    width: 100%;
+  }
+  
+  .bookshelf h3 {
+    margin-top: 0;
+    margin-bottom: var(--space-lg);
+    color: var(--color-binding);
+  }
+  
+  /* Filter styles */
+  .bookshelf-filters {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .filter-checkbox {
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .filter-checkbox input[type="checkbox"] {
+    display: none;
+  }
+  
+  .filter-checkbox input[type="checkbox"] + span {
+    display: inline-block;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-paper);
+    border: 1px solid var(--color-leather);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+  }
+  
+  .filter-checkbox input[type="checkbox"]:checked + span {
+    background-color: var(--color-leather);
+    color: var(--color-paper);
+  }
+  
+  /* Book list styles */
+  .books-list {
+    width: 100%;
+  }
+  
+  .books-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .book-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-parchment);
+    transition: background-color 0.2s ease;
+  }
+  
+  .book-item:hover {
+    background-color: var(--color-secondary-hover-bg);
+  }
+  
+  .book-title {
+    color: var(--color-binding);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  
+  .book-title:hover {
+    color: var(--color-accent);
+  }
+  
+  /* Dropdown menu styles */
+  .dropdown {
+    position: relative;
+  }
+  
+  .dropdown-toggle {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    padding: var(--space-xs) var(--space-sm);
+    cursor: pointer;
+    color: var(--color-leather);
+    min-height: auto;
+    box-shadow: none;
+  }
+  
+  .dropdown-toggle:hover {
+    color: var(--color-accent);
+    background-color: transparent;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    width: 150px;
+    background-color: var(--color-paper);
+    border: 1px solid var(--color-parchment);
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 2px 8px var(--color-shadow);
+    z-index: 100;
+    display: none;
+  }
+  
+  .dropdown:hover .dropdown-menu,
+  .dropdown:focus-within .dropdown-menu {
+    display: block;
+  }
+  
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--space-sm) var(--space-md);
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    color: var(--color-ink);
+    cursor: pointer;
+    box-shadow: none;
+    margin: 0;
+  }
+  
+  .dropdown-item:hover {
+    background-color: var(--color-parchment);
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .no-books {
+    font-style: italic;
+    color: var(--color-leather);
+    padding: var(--space-md);
+  }
+  
+  /* 6.3 Book Display */
   .book-title {
     font-size: clamp(2rem, 5vw, 3rem);
     text-align: center;

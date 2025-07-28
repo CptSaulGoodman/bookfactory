@@ -13,6 +13,16 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
+    <div class="container">
+        <aside class="sidebar">
+            <div hx-get="/bookshelf" hx-trigger="load" hx-target="this">
+                <!-- Bookshelf content will be loaded here -->
+            </div>
+        </aside>
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
     <button class="theme-switcher" id="theme-switcher" aria-label="Toggle theme">
         <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <circle cx="12" cy="12" r="5"/>
@@ -23,9 +33,6 @@
         </svg>
     </button>
     <div class="htmx-indicator spinner"></div>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
 
     <script>
         (function() {

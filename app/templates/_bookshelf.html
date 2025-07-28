@@ -1,0 +1,44 @@
+<!-- Bookshelf Template -->
+<div class="bookshelf">
+    <div class="bookshelf-filters">
+        <form hx-get="/bookshelf" hx-target="#bookshelf-content" hx-trigger="change">
+            <label class="filter-checkbox">
+                <input type="checkbox" name="status" value="active" checked>
+                {{ _('active') }}
+            </label>
+            <label class="filter-checkbox">
+                <input type="checkbox" name="status" value="draft">
+                {{ _('drafts') }}
+            </label>
+        </form>
+    </div>
+    
+    <div id="bookshelf-content" class="books-list">
+        {% if books %}
+            <ul>
+                {% for book in books %}
+                <li class="book-item" id="book-{{ book.id }}">
+                    <a href="{% if book.status == 'active' %}/book/{{ book.id }}{% else %}/book/new{% endif %}" class="book-title">
+                        {{ book.title }}
+                    </a>
+                    <div class="book-actions">
+                        <div class="dropdown">
+                            <button class="dropdown-toggle">...</button>
+                            <div class="dropdown-menu">
+                                <button class="dropdown-item" 
+                                        hx-delete="/book/{{ book.id }}" 
+                                        hx-target="#book-{{ book.id }}" 
+                                        hx-swap="outerHTML">
+                                    {{ _('delete') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-books">{{ _('no_books_found') }}</p>
+        {% endif %}
+    </div>
+</div>
