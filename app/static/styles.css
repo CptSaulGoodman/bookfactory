@@ -180,11 +180,71 @@
     transform: translateX(-240px);
   }
   
+  /* New Book Button */
+  .new-book-button-container {
+    position: absolute;
+    bottom: var(--space-md);
+    left: var(--space-lg);
+    right: var(--space-lg);
+    width: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  .new-book-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--space-md);
+    background-color: var(--color-accent);
+    color: var(--color-button-text);
+    text-decoration: none;
+    border-radius: var(--border-radius-sm);
+    font-weight: 700;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 2px 4px var(--color-shadow);
+  }
+
+  .new-book-button:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--color-shadow);
+  }
+
+  .new-book-icon {
+    display: none;
+  }
+
+  /* New book button in collapsed sidebar */
+  .sidebar-collapsed .new-book-text {
+    display: none;
+  }
+
+  .sidebar-collapsed .new-book-icon {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .sidebar-collapsed .new-book-button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .sidebar-collapsed .new-book-button-container {
+    left: auto;
+    right: 3px;
+    width: 30px;
+  }
+
   /* Toggle button for sidebar */
   .sidebar-toggle {
     position: absolute;
     top: var(--space-md);
-    right: 3px;
+    left: 240px;
     width: 30px;
     height: 30px;
     background-color: var(--color-accent);
@@ -227,8 +287,8 @@
     transition: transform 0.2s ease;
   }
   
-  .sidebar-collapsed .sidebar-toggle {
-    right: 3px;
+  .body-collapsed .sidebar-toggle {
+    left: 5px;
   }
   
   /* Main content area */
@@ -855,12 +915,18 @@
       transform: translateX(-280px);
     }
     
+    /* Fix mobile toggle button positioning - make it fixed instead of absolute */
     .sidebar-toggle {
-      right: -15px;
+      position: fixed !important; /* Override absolute positioning */
+      right: 10px;
+      top: var(--space-md);
+      z-index: 1002; /* Higher than sidebar z-index */
     }
     
     .sidebar-collapsed .sidebar-toggle {
-      right: -45px;
+      position: fixed !important; /* Keep it fixed even when collapsed */
+      right: 10px;
+      top: var(--space-md);
     }
     
     .content {
@@ -934,3 +1000,7 @@
   .mb-0 { margin-bottom: 0; }
   .text-center { text-align: center; }
   .w-full { width: 100%; }
+
+
+
+
