@@ -62,6 +62,15 @@
     --color-success: #5c8c5c;      /* Soft green for success messages */
     --color-shadow: rgba(79, 60, 45, 0.15); /* Warm shadow color */
     
+    /* Theme-dependent colors */
+    --color-input-bg: white;
+    --color-button-text: white;
+    --color-secondary-hover-bg: rgba(140, 113, 88, 0.1); /* from --color-leather */
+    --color-focus-ring: rgba(140, 113, 88, 0.2); /* from --color-leather */
+    --color-completed-timeline-bg: rgba(232, 224, 208, 0.5); /* from --color-parchment */
+    --color-chapter-hover-bg: rgba(232, 224, 208, 0.3); /* from --color-parchment */
+    --color-ai-comment-text: rgba(232, 224, 208, 0.5); /* from --color-parchment */
+
     /* Spacing */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
@@ -74,6 +83,25 @@
     --border-radius-sm: 0.25rem;
     --border-radius-md: 0.5rem;
     --border-radius-lg: 1rem;
+  }
+  
+  html[data-theme="dark"] {
+    --color-paper: #1a1a1a;
+    --color-parchment: #2a2a2a;
+    --color-leather: #c8b8a8;
+    --color-binding: #e0d8ce;
+    --color-ink: #f0e9e0;
+    --color-accent: #a87e67;
+    --color-accent-hover: #b88e77;
+    --color-shadow: rgba(0, 0, 0, 0.4);
+    
+    --color-input-bg: #252525;
+    --color-button-text: #1a1a1a;
+    --color-secondary-hover-bg: rgba(200, 184, 168, 0.1);
+    --color-focus-ring: rgba(200, 184, 168, 0.2);
+    --color-completed-timeline-bg: rgba(240, 233, 224, 0.1);
+    --color-chapter-hover-bg: rgba(240, 233, 224, 0.05);
+    --color-ai-comment-text: #2a2a2a;
   }
   
   /* 3. Typography */
@@ -133,7 +161,7 @@
     margin-right: var(--space-sm);
     margin-bottom: var(--space-md);
     background-color: var(--color-accent);
-    color: white;
+    color: var(--color-button-text);
     border: none;
     border-radius: var(--border-radius-sm);
     font-family: "PT Serif", serif;
@@ -164,7 +192,7 @@
   }
   
   button.secondary:hover {
-    background-color: rgba(140, 113, 88, 0.1);
+    background-color: var(--color-secondary-hover-bg);
   }
   
   form.htmx-request button {
@@ -187,7 +215,7 @@
     margin-bottom: var(--space-lg);
     border: 1px solid var(--color-parchment);
     border-radius: var(--border-radius-sm);
-    background-color: white;
+    background-color: var(--color-input-bg);
     font-family: "PT Serif", serif;
     font-size: 1rem;
     color: var(--color-ink);
@@ -200,7 +228,7 @@
   textarea:focus {
     outline: none;
     border-color: var(--color-leather);
-    box-shadow: 0 0 0 3px rgba(140, 113, 88, 0.2);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
     transform: scale(1.01);
   }
   
@@ -224,7 +252,7 @@
   
   input[type="radio"]:checked {
     border-color: var(--color-accent);
-    background-color: white;
+    background-color: var(--color-input-bg);
   }
   
   input[type="radio"]:checked::after {
@@ -265,7 +293,7 @@
   
   .timeline-item-completed {
     padding: var(--space-md) var(--space-lg);
-    background-color: rgba(232, 224, 208, 0.5);
+    background-color: var(--color-completed-timeline-bg);
     border-left: 3px solid var(--color-leather);
     border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
     opacity: 0.9;
@@ -295,12 +323,12 @@
   }
 
   .ai-comment p {
-    color: rgba(232, 224, 208, 0.5);
+    color: var(--color-ai-comment-text);
   }
   
   /* 5.5 Character Form */
   .character-form {
-    background-color: white;
+    background-color: var(--color-input-bg);
     border-radius: var(--border-radius-md);
     padding: var(--space-lg);
     margin-bottom: var(--space-lg);
@@ -451,7 +479,7 @@
   }
   
   .chapter:hover {
-    background-color: rgba(232, 224, 208, 0.3);
+    background-color: var(--color-chapter-hover-bg);
   }
   
   .chapter h4 {
@@ -490,7 +518,63 @@
     animation: fadeIn 0.4s ease-out;
   }
   
-  /* 8. Media Queries */
+  /* 8. Theme Switcher */
+  .theme-switcher {
+    position: fixed;
+    top: var(--space-md);
+    right: var(--space-md);
+    background-color: var(--color-parchment);
+    border: 1px solid var(--color-leather);
+    color: var(--color-leather);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex !important; /* Override general button styles */
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px var(--color-shadow);
+    transition: all 0.3s ease;
+    z-index: 1001; /* Above spinner but below backdrop */
+    /* Override general button styles */
+    padding: 0;
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    min-height: auto;
+  }
+
+  .theme-switcher:hover {
+    background-color: var(--color-leather);
+    color: var(--color-paper);
+    transform: scale(1.1);
+  }
+
+  .theme-switcher svg {
+    width: 24px;
+    height: 24px;
+    transition: opacity 0.3s ease;
+  }
+  
+  .theme-switcher svg path {
+    fill: currentColor;
+  }
+
+  .theme-switcher .icon-sun {
+    display: none;
+  }
+  .theme-switcher .icon-moon {
+    display: block;
+  }
+
+  html[data-theme="dark"] .theme-switcher .icon-sun {
+    display: block;
+  }
+  html[data-theme="dark"] .theme-switcher .icon-moon {
+    display: none;
+  }
+
+  /* 9. Media Queries */
   @media (min-width: 768px) {
     main {
       max-width: 700px;

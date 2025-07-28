@@ -20,7 +20,7 @@
                 hx-target="#wizard-content"
                 hx-swap="innerHTML">
                 <label for="world_description">{{ _('world_prompt_label') }}</label>
-                <textarea class="textarea" id="world_description" name="world_description" rows="4" required>{{ book.world_description }}</textarea>
+                <textarea class="textarea" id="world_description" name="world_description" rows="4" required>{{ book.world_description if book.world_description else '' }}</textarea>
                 <button type="button" hx-get="/book/{{ book.id }}/title" hx-target="#wizard-content" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
                 <button type="submit">{{ _('wizard_next_button') }}</button>
             </form>

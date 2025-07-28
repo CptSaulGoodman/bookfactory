@@ -15,7 +15,7 @@
             hx-target="#wizard-content"
             hx-swap="innerHTML">
             <label for="title">{{ _('title_prompt_label') }}</label>                        
-            <input class="input" type="text" id="title" name="title" value="{{ book.title }}" required>
+            <input class="input" type="text" id="title" name="title" value="{{ book.title if book.title else '' }}" required>
             <button type="button" hx-get="/book/new" hx-target="body" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
             <button type="submit">{{ _('wizard_next_button') }}</button>
         </form>
