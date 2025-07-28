@@ -3,23 +3,37 @@
 {% block title %}{{ book.title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ book.title }}</h1>
-    <h2>{{ subtitle }}</h2>
-    <p><em>{{ synopsis }}</em></p>
-    <p><strong>{{ _('characters') }}:</strong></p>
+<div class="book-overview">
+    <header class="book-header">
+        <h1 class="book-overview-title">{{ book.title }}</h1>
+        <h2 class="book-subtitle">{{ subtitle }}</h2>
+        <div class="book-synopsis">
+            <em>{{ synopsis }}</em>
+        </div>
+    </header>
 
-    <ul>
-        {% for character in characters %}
-            <li>{{ character }}</li>
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section">
+        <h3 class="book-section-title">{{ _('characters') }}</h3>
+        <ul class="characters-grid">
+            {% for character in characters %}
+                <li class="character-item">{{ character }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section chapters-container">
+        <h3 class="book-section-title">{{ _('chapters') }}</h3>
+        
+        {% for chapter in chapters %}
+            <article class="chapter">
+                <h4 class="chapter-title">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
+                <p class="chapter-synopsis">{{ chapter.chapter_synopsis }}</p>
+            </article>
         {% endfor %}
-    </ul>
-
-    <p><hr></p>
-
-    <p><strong>{{ _('chapters') }}:</strong></p>
-
-    {% for chapter in chapters %}
-        <h4>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
-        <p>{{ chapter.chapter_synopsis }}</p>
-    {% endfor %}
+    </section>
+</div>
 {% endblock %}

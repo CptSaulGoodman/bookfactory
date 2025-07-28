@@ -20,12 +20,6 @@ DB_LOCATION = "book_db"
 COLLECTION_NAME = "characters"
 RETRIEVER_K = 5
 
-
-# Vector Database Configuration
-DB_LOCATION = "book_db"
-COLLECTION_NAME = "characters"
-RETRIEVER_K = 5
-
 # Book Generation Settings
 DEFAULT_WORLD_PARAMS = "a mess hall during world war 2"
 DEFAULT_STORY_BITS = "a cook serving food to his fellow soldiers"
