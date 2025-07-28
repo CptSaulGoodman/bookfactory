@@ -1,14 +1,14 @@
 <!-- Bookshelf Template -->
 <div class="bookshelf">
     <div class="bookshelf-filters">
-        <form hx-get="/bookshelf" hx-target="#bookshelf-content" hx-trigger="change">
+        <form hx-get="/bookshelf" hx-target="#bookshelf-content" hx-trigger="change" hx-select="#bookshelf-content">
             <label class="filter-checkbox">
                 <input type="checkbox" name="status" value="active" checked>
-                {{ _('active') }}
+                <span>{{ _('filter_active') }}</span>
             </label>
             <label class="filter-checkbox">
                 <input type="checkbox" name="status" value="draft">
-                {{ _('drafts') }}
+                <span>{{ _('filter_drafts') }}</span>
             </label>
         </form>
     </div>
