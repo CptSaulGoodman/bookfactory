@@ -25,10 +25,9 @@
                         <div class="dropdown">
                             <button class="dropdown-toggle">...</button>
                             <div class="dropdown-menu">
-                                <button class="dropdown-item" 
-                                        hx-delete="/book/{{ book.id }}" 
-                                        hx-target="#book-{{ book.id }}" 
-                                        hx-swap="outerHTML">
+                                <button class="dropdown-item delete-book-btn" 
+                                        data-book-id="{{ book.id }}"
+                                        data-book-title="{{ book.title }}">
                                     {{ _('delete') }}
                                 </button>
                             </div>
@@ -43,8 +42,6 @@
     </div>
     
     <div class="new-book-button-container">
-
-
         <button class="theme-switcher" id="theme-switcher" aria-label="Toggle theme">
             <svg class="icon icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <circle cx="12" cy="12" r="5"/>
@@ -62,6 +59,24 @@
     </div>
 </div>
 
+<!-- Confirmation Dialog -->
+<div id="delete-confirmation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>{{ _('confirm_delete') }}</h3>
+            <button class="modal-close" id="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>{{ _('delete_book_warning') }} "<span id="book-title-to-delete"></span>"?</p>
+            <p class="warning-text">{{ _('delete_warning_permanent') }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-delete">{{ _('cancel') }}</button>
+            <button class="btn btn-danger" id="confirm-delete">{{ _('delete') }}</button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
         // Theme switcher functionality
@@ -76,6 +91,65 @@
             const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+        });
+
+        // Delete confirmation functionality
+        const modal = document.getElementById('delete-confirmation-modal');
+        const modalClose = document.getElementById('modal-close');
+        const cancelBtn = document.getElementById('cancel-delete');
+        const confirmBtn = document.getElementById('confirm-delete');
+        const bookTitleSpan = document.getElementById('book-title-to-delete');
+        
+        let currentBookId = null;
+        let currentBookElement = null;
+
+        // Show modal when delete button is clicked
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete-book-btn')) {
+                e.preventDefault();
+                currentBookId = e.target.getAttribute('data-book-id');
+                const bookTitle = e.target.getAttribute('data-book-title');
+                currentBookElement = document.getElementById(`book-${currentBookId}`);
+                
+                bookTitleSpan.textContent = bookTitle;
+                modal.style.display = 'flex';
+            }
+        });
+
+        // Close modal functions
+        function closeModal() {
+            modal.style.display = 'none';
+            currentBookId = null;
+            currentBookElement = null;
+        }
+
+        modalClose.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Handle delete confirmation
+        confirmBtn.addEventListener('click', function() {
+            if (currentBookId && currentBookElement) {
+                // Create HTMX request to delete the book
+                htmx.ajax('DELETE', `/book/${currentBookId}`, {
+                    target: `#book-${currentBookId}`,
+                    swap: 'outerHTML'
+                });
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+                closeModal();
+            }
         });
     })();
 </script>
