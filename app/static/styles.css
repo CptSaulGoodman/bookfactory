@@ -848,14 +848,13 @@
   
   /* 8. Theme Switcher */
   .theme-switcher {
-    position: fixed;
-    top: var(--space-md);
-    right: var(--space-md);
+    display: block;
+    margin-bottom: var(--space-md);
     background-color: var(--color-parchment);
     border: 1px solid var(--color-leather);
     color: var(--color-leather);
-    width: 44px;
-    height: 44px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     cursor: pointer;
     display: flex !important; /* Override general button styles */
@@ -866,7 +865,6 @@
     z-index: 1001; /* Above spinner but below backdrop */
     /* Override general button styles */
     padding: 0;
-    margin: 0;
     font-size: inherit;
     font-weight: inherit;
     min-height: auto;
