@@ -3,11 +3,11 @@
     <div class="bookshelf-filters">
         <form hx-get="/bookshelf" hx-target="#bookshelf-content" hx-trigger="change" hx-select="#bookshelf-content">
             <label class="filter-checkbox">
-                <input type="checkbox" name="status" value="active" checked>
+                <input type="radio" name="status" value="active" checked>
                 <span>{{ _('filter_active') }}</span>
             </label>
             <label class="filter-checkbox">
-                <input type="checkbox" name="status" value="draft">
+                <input type="radio" name="status" value="draft">
                 <span>{{ _('filter_drafts') }}</span>
             </label>
         </form>
