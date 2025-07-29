@@ -44,3 +44,8 @@ delete_book_warning: "Bist du sicher, dass du das Buch löschen möchtest?"
 delete_warning_permanent: "Dieser Vorgang kann nicht rückgängig gemacht werden."
 delete: "Löschen"
 cancel: "Abbrechen"
+
+summary: "Zusammenfassung"
+role: "Rolle"
+protagonist: "Hauptfigur"
+supporting: "Nebenfigur"

@@ -1,4 +1,6 @@
 """Vector database operations for character storage and retrieval."""
+import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma

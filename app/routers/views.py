@@ -411,9 +411,9 @@ async def get_book_final(
     characters = []
     if book.characters:
         for character in book.characters:
-            char_type = "protagonist" if character.is_protagonist else "supporting"
+            char_type = _("protagonist") if character.is_protagonist else _("supporting")
             characters.append(
-                f"{character.name}, role: {char_type}, summary: {character.description}"
+                f"{character.name}, {_('role')}: {char_type}, {_('summary')}: {character.description}"
             )
 
     chapters = book.llm_concept.get("chapters")
