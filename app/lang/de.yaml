@@ -1,3 +1,6 @@
+# Language: German
+language_name: "German"
+
 app_title: "Buchfabrik"
 wizard_title: "Lass uns ein neues Buch schreiben!"
 story_prompt_label: "Wovon handelt deine Geschichte?"

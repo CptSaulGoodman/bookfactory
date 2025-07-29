@@ -1,3 +1,6 @@
+# Language: English
+language_name: "English"
+
 app_title: "Book Factory"
 wizard_title: "Let's create a new book!"
 story_prompt_label: "What is your story about?"

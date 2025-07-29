@@ -189,8 +189,11 @@
     width: auto;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
   }
-
+  
   .new-book-button {
     display: flex;
     justify-content: center;
@@ -586,6 +589,10 @@
   /* 6.2 Bookshelf Styles */
   .bookshelf {
     width: 100%;
+    height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   
   .bookshelf h3 {
@@ -600,6 +607,7 @@
     gap: var(--space-xs);
     margin-bottom: var(--space-lg);
     align-items: center;
+    flex-shrink: 0;
   }
   
   .filter-checkbox {
@@ -657,6 +665,9 @@
   /* Book list styles */
   .books-list {
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
   
   .books-list ul {
@@ -980,7 +991,7 @@
   /* 8. Theme Switcher */
   .theme-switcher {
     display: block;
-    margin-bottom: var(--space-md);
+    margin-bottom: 0;
     background-color: var(--color-parchment);
     border: 1px solid var(--color-leather);
     color: var(--color-leather);
@@ -988,13 +999,12 @@
     height: 30px;
     border-radius: 50%;
     cursor: pointer;
-    display: flex !important; /* Override general button styles */
+    display: flex !important; 
     justify-content: center;
     align-items: center;
     box-shadow: 0 2px 5px var(--color-shadow);
     transition: all 0.3s ease;
     z-index: 1001; /* Above spinner but below backdrop */
-    /* Override general button styles */
     padding: 0;
     font-size: inherit;
     font-weight: inherit;
@@ -1021,14 +1031,86 @@
     display: none;
   }
   .theme-switcher .icon-moon {
-    display: block;
+    display: inline-block;
   }
 
   html[data-theme="dark"] .theme-switcher .icon-sun {
-    display: block;
+    display: inline-block;
   }
   html[data-theme="dark"] .theme-switcher .icon-moon {
     display: none;
+  }
+  
+  .switchers-container {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.sidebar-collapsed .switchers-container {
+    flex-direction: column; /* Stack vertically when sidebar is collapsed */
+}
+
+  .language-switcher {
+      background-color: var(--color-parchment);
+      border: 1px solid var(--color-leather);
+      color: var(--color-leather);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 2px 5px var(--color-shadow);
+      transition: all 0.3s ease;
+      padding: 0;
+      font-size: inherit;
+      font-weight: inherit;
+      min-height: auto;
+  }
+  
+  .language-switcher:hover {
+      background-color: var(--color-leather);
+      color: var(--color-paper);
+      transform: scale(1.1);
+  }
+  
+  .language-switcher .icon {
+      width: 20px;
+      height: 20px;
+  }
+  
+  .language-menu {
+      display: none;
+      position: absolute;
+      bottom: 125%; /* Position above the button */
+      right: -5px;
+      background-color: var(--color-paper);
+      border: 1px solid var(--color-parchment);
+      border-radius: var(--border-radius-sm);
+      box-shadow: 0 2px 8px var(--color-shadow);
+      z-index: 1002;
+      min-width: 50px;
+      text-align: center;
+  }
+  
+  .language-switcher-container:hover .language-menu,
+  .language-switcher-container:focus-within .language-menu {
+      display: inline;
+  }
+  
+  .language-item {
+      display: block;
+      padding: var(--space-sm) var(--space-md);
+      color: var(--color-ink);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+  }
+  
+  .language-item:hover {
+      background-color: var(--color-parchment);
   }
 
   /* 9. Media Queries */
@@ -1146,9 +1228,9 @@
 }
 
 .modal-content {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-parchment);
   border-radius: 8px;
+  background-color: var(--color-paper);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   max-width: 400px;
   width: 90%;
@@ -1256,10 +1338,21 @@
 
 /* Ensure modal works with theme */
 [data-theme="dark"] .modal-content {
-  background: var(--bg-color);
-  border-color: var(--border-color);
+  background-color: var(--color-paper);
+  border-color: var(--color-parchment);
 }
 
 [data-theme="dark"] .modal-header {
-  border-bottom-color: var(--border-color);
+  border-bottom-color: var(--color-parchment);
+}
+
+#bookshelf-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+#confirm-delete {
+  background-color: var(--color-error);
+  color: var(--color-ink);
 }

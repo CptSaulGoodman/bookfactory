@@ -1,6 +1,7 @@
 # app/routers/views.py
+import logging
 from typing import List, Optional
-from fastapi import APIRouter, Request, Depends, Form, Header, Query
+from fastapi import APIRouter, Request, Depends, Form, Header, Query, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session
@@ -10,23 +11,28 @@ import json
 from app.database import get_session
 from app.services.book_service import BookService
 from app.utils.i18n import translator
+from app.utils.language import get_language
 
 # Configure templates
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter()
 
 
-def get_language(accept_language: str = Header(None)) -> str:
-    if accept_language:
-        # Parse the Accept-Language header manually
-        # Format is typically: "en-US,en;q=0.9,de;q=0.8"
-        languages = accept_language.split(',')
-        for lang_entry in languages:
-            # Extract the primary language code (before any quality value or region)
-            lang_code = lang_entry.split(';')[0].split('-')[0].strip()
-            if lang_code in translator.available_languages:
-                return lang_code
-    return "en"  # Default language
+@router.get("/set-language/{lang_code}")
+async def set_language(lang_code: str, response: Response, request: Request):
+    """
+    Sets the language preference in a cookie and redirects to the referer.
+    """
+    referer = request.headers.get("referer", "/")
+    
+    if lang_code in translator.available_languages:
+        logging.info(f"Setting language cookie to '{lang_code}' and redirecting to {referer}")
+        response = RedirectResponse(url=referer, status_code=status.HTTP_303_SEE_OTHER)
+        response.set_cookie(key="language", value=lang_code, httponly=True, max_age=31536000) # 1 year
+        return response
+    
+    logging.warning(f"Language code '{lang_code}' not available. Redirecting without setting cookie.")
+    return RedirectResponse(url=referer, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -58,7 +64,13 @@ async def get_bookshelf(
 
     return templates.TemplateResponse(
         "_bookshelf.html",
-        {"request": request, "books": books, "_": _, "lang": lang}
+        {
+            "request": request,
+            "books": books,
+            "_": _,
+            "lang": lang,
+            "available_languages": translator.available_languages,
+        },
     )
 
 

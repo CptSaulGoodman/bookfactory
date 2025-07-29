@@ -2,4 +2,10 @@
 
 {% block content %}
     <h1>{{ _('welcome_message') }}</h1>
+
+    <a href="/book/new" class="new-book-button">
+        <span class="new-book-text">{{ _('new_book') }}</span>
+        <span class="new-book-icon">+</span>
+    </a>
+        
 {% endblock %}
