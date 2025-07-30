@@ -24,14 +24,20 @@
             <p>{{ _('characters_description') }}</p>
                 
             <div id="character-forms-container">
-                {% include "wizard/_character_form.html" with context %}
+                {% if book.characters %}
+                    {% for character in book.characters %}
+                        {% set character_index = loop.index0 %}
+                        {% include "wizard/_character_form.html" with context %}
+                    {% endfor %}
+                {% else %}
+                    {% include "wizard/_character_form.html" with context %}
+                {% endif %}
+                
             </div>
             
             <button type="button"
-                    _="on click
-                        set my @hx-get to '/book/{{ book.id }}/characters/add?character_index=' + document.querySelectorAll('.character-form').length
-                      end"
-                    hx-get="/book/{{ book.id }}/characters/add?character_index=1"
+                    hx-get="/book/{{ book.id }}/characters/add"
+                    hx-vals="js:{character_index: document.querySelectorAll('.character-form').length}"
                     hx-target="#character-forms-container"
                     hx-swap="beforeend"
                     class="secondary">

@@ -6,7 +6,7 @@ from app.services.vector_store import VectorStoreService
 from app.prompts.templates import get_template
 from app import config
 from app.models.data_models import BookConcept, CharacterCollection
-from app.models.models import Book
+from app.models.models import Book, Character
 
 
 class BookGenerator:
@@ -56,21 +56,18 @@ class BookGenerator:
 
     def generate_character_sheet(
         self,
-        number_of_chars: int = config.DEFAULT_NUMBER_OF_CHARS,
-        number_of_main: int = config.DEFAULT_NUMBER_OF_MAIN_CHARS,
-        number_of_support: int = config.DEFAULT_NUMBER_OF_SUPPORT_CHARS,
+        character: Character,
         world_params: str = config.DEFAULT_WORLD_PARAMS,
         story_bits: str = config.DEFAULT_STORY_BITS
     ) -> str:
         """Generate character sheets."""
-        return self.ai_service.generate_response(
-            get_template("character_sheet",
-                        number_of_chars=number_of_chars,
-                        number_of_main=number_of_main,
-                        number_of_support=number_of_support,
+        prompt = get_template("character_sheet",
+                        character_name=character.name,
+                        basic_traits=character.description,
+                        is_protagonist=character.is_protagonist,
                         world_params=world_params,
                         story_bits=story_bits)
-        )
+        return self.ai_service.generate_response(prompt, model=Character)
     
     def generate_events(
         self,

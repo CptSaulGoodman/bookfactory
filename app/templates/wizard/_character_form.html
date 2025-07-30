@@ -1,13 +1,13 @@
 <div class="character-form">
     <hr>
-    <label>{{ _('character_form_name_label') }}
-        <input type="text" name="name_{{ character_index }}" value="" required>
+    <label>#{{ character_index + 1 }} - {{ _('character_form_name_label') }}
+        <input type="text" name="name_{{ character_index }}" value="{% if book and book.characters and book.characters[character_index].name %}{{ book.characters[character_index].name }}{% endif %}" required>
     </label>
     <label>{{ _('character_form_description_label') }}
-        <textarea name="description_{{ character_index }}" rows="3" required></textarea>
+        <textarea name="description_{{ character_index }}" rows="3" required>{% if book and book.characters and book.characters[character_index].description %}{{ book.characters[character_index].description }}{% endif %}</textarea>
     </label>
     <label>
-        <input type="radio" name="is_protagonist" value="{{ character_index }}" {% if character_index == 0 %}checked{% endif %}>
+        <input type="radio" name="is_protagonist" value="{{ character_index }}" {% if (book and book.characters and book.characters[character_index].is_protagonist) or (not book.characters and character_index == 0) %}checked{% endif %}>
         {{ _('character_form_is_protagonist_label') }}
     </label>
     <button type="button" onclick="this.closest('.character-form').remove()">{{ _('character_form_remove_button') }}</button>

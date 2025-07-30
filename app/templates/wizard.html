@@ -15,8 +15,11 @@
                 name="user_prompt"
                 rows="4"
                 required
-                placeholder="{{ _('story_prompt_placeholder') }}"></textarea>
-            <button type="submit">{{ _('start_button') }}</button>
+                placeholder="{{ _('story_prompt_placeholder') }}">{% if book %}{{ book.user_prompt }}{% endif %}</textarea>
+            {% if book %}
+                <input type="hidden" name="book_id" value="{{ book.id }}">
+            {% endif %}
+            <button type="submit">{{ _('continue_button') if book else _('start_button') }}</button>
         </form>
     </section>
 {% endblock %}

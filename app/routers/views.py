@@ -87,12 +87,29 @@ async def delete_book(
     return HTMLResponse(content="", status_code=200)
 
 
+@router.get("/book/new/{book_id}", response_class=HTMLResponse)
 @router.get("/book/new", response_class=HTMLResponse)
-async def get_home(request: Request, lang: str = Depends(get_language)):
-    # This will render our main page.
+async def get_home(
+    request: Request,
+    book_id: Optional[int] = None,
+    session: Session = Depends(get_session),
+    lang: str = Depends(get_language),
+):
+    """
+    Renders the initial wizard page or resumes a book creation process.
+    """
     _ = translator.get_translator(lang)
+    book = None
+    if book_id:
+        book_service = BookService(session)
+        try:
+            book = book_service.get_book(book_id)
+        except ValueError:
+            # Book not found, treat as a new book creation
+            book = None
+
     return templates.TemplateResponse(
-        "wizard.html", {"request": request, "_": _, "lang": lang}
+        "wizard.html", {"request": request, "book": book, "_": _, "lang": lang}
     )
 
 
@@ -100,6 +117,7 @@ async def get_home(request: Request, lang: str = Depends(get_language)):
 async def create_book(
     request: Request,
     user_prompt: str = Form(...),
+    book_id: Optional[int] = Form(None),
     session: Session = Depends(get_session),
     lang: str = Depends(get_language),
 ):
@@ -107,7 +125,10 @@ async def create_book(
     Creates a new book draft and renders the title step.
     """
     book_service = BookService(session=session)
-    book = book_service.create_book_draft(user_prompt=user_prompt)
+    if book_id:
+        book = book_service.update_book(book_id=book_id, user_prompt=user_prompt)
+    else:
+        book = book_service.create_book_draft(user_prompt=user_prompt)
     ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
     _ = translator.get_translator(lang)
 
@@ -271,7 +292,7 @@ async def get_character_form(
         "wizard/_character_form.html",
         {
             "request": request,
-            "book_id": book_id,
+            "book": None,
             "character_index": character_index,
             "_": _,
             "lang": lang,
@@ -321,6 +342,8 @@ async def save_characters(
 
     # Save characters to the database
     book_service.save_characters_for_book(book_id=book_id, characters_data=characters_data)
+    book_service.update_book(book_id=book_id, chapters_count=config.DEFAULT_NUMBER_OF_CHAPTERS)
+    
 
     ai_comment = book_service.ai_service.generate_comment(
         user_story_idea=book.user_prompt,
@@ -337,8 +360,7 @@ async def save_characters(
             "book": book,
             "ai_comment": ai_comment,
             "_": _,
-            "lang": lang,
-            "book.chapters_count": config.DEFAULT_NUMBER_OF_CHAPTERS
+            "lang": lang
         },
     )
     

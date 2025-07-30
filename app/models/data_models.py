@@ -38,10 +38,14 @@ class Book:
 @dataclass
 class Character:
     """Represents a character in the book."""
-    name: str
-    main_character: bool
-    role: str
-    summary: str
+    name: str = Field(description="The name of the character.")
+    is_protagonist: bool = Field(description="Whether the character is a main character or a supporting character.")
+    summary: str = Field(description="2-3 sentences capturing the character's essence.")
+    profile: str = Field(description="Detailed development of user traits plus logical extensions")
+    dialogue_voice: str = Field(description="1-2 example lines showing how they speak")
+    relationships: str = Field(description="How they typically interact with others")
+    role_potential: str = Field(description="What narrative functions they could serve")
+    story_arc: str = Field(description="2-3 possible growth directions")
 
 
 @dataclass
@@ -51,11 +55,11 @@ class CharacterCollection:
 
     def get_main_characters(self) -> List[Character]:
         """Get all main characters."""
-        return [char for char in self.chars if char.main_character]
+        return [char for char in self.chars if char.is_protagonist]
 
     def get_supporting_characters(self) -> List[Character]:
         """Get all supporting characters."""
-        return [char for char in self.chars if not char.main_character]
+        return [char for char in self.chars if not char.is_protagonist]
 
     def get_character_by_name(self, name: str) -> Optional[Character]:
         """Get a character by name."""

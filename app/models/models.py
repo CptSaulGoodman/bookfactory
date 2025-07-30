@@ -34,6 +34,13 @@ class Character(SQLModel, table=True):
     name: str
     description: str
     is_protagonist: bool = False
+    
+    summary: Optional[str] = None
+    profile: Optional[str] = None
+    dialogue_voice: Optional[str] = None
+    relationships: Optional[str] = None
+    role_potential: Optional[str] = None
+    story_arc: Optional[str] = None
 
     book_id: Optional[int] = Field(default=None, foreign_key="book.id")
     book: Optional[Book] = Relationship(back_populates="characters")

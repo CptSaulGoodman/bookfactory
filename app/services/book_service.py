@@ -73,6 +73,9 @@ class BookService:
         """
         book = self.session.get(Book, book_id)
         
+        # Delete all existing characters for the book
+        self.session.query(Character).filter(Character.book_id == book_id).delete()
+
         # Simple validation: Ensure only one protagonist
         protagonist_count = sum(1 for char in characters_data if char.get('is_protagonist'))
         if protagonist_count != 1:
@@ -83,7 +86,13 @@ class BookService:
                 name=char_data['name'],
                 description=char_data['description'],
                 is_protagonist=char_data.get('is_protagonist', False),
-                book_id=book.id
+                book_id=book.id,
+                summary=char_data.get('summary', None),
+                profile=char_data.get('profile', None),
+                dialogue_voice=char_data.get('dialogue_voice', None),
+                relationships=char_data.get('relationships', None),
+                role_potential=char_data.get('role_potential', None),
+                story_arc=char_data.get('story_arc', None)
             )
             self.session.add(character)
         
@@ -94,8 +103,23 @@ class BookService:
         Marks the book as 'active' and triggers the generation process.
         """
         book = self.session.get(Book, book_id)
+
+        characters_data = []
+        characters = book.characters
+        for character in characters:
+            print(f"Generating character sheet for {character.name}")
+            character_sheet = self.book_generator.generate_character_sheet(character, book.world_description, book.user_prompt)
+            llm_character_sheet = character_sheet.dict()
+            print(f"Character sheet for {character.name}: {llm_character_sheet}")
+            characters_data.append(llm_character_sheet)
         
-        # Call the generator
+        self.save_characters_for_book(book_id=book_id, characters_data=characters_data)
+        
+        # After saving the characters, the book object in memory is stale.
+        # We re-fetch it from the database to get the updated characters
+        # before passing it to the next function.
+        book = self.get_book(book_id)
+
         llm_concept = self.book_generator.generate_initial_concept_for_book(book)
         
         # Convert the Pydantic model to a dictionary for database storage

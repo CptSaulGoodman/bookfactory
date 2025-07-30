@@ -18,7 +18,7 @@
             <ul>
                 {% for book in books %}
                 <li class="book-item" id="book-{{ book.id }}">
-                    <a href="{% if book.status == 'active' %}/book/{{ book.id }}{% else %}/book/new{% endif %}" class="book-title">
+                    <a href="{% if book.status == 'active' %}/book/{{ book.id }}{% else %}/book/new/{{ book.id }}{% endif %}" class="book-title">
                         {{ book.title }}
                     </a>
                     <div class="book-actions">
