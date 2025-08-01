@@ -448,7 +448,7 @@ async def get_book_final(
             "book": book,
             "_": _,
             "lang": lang,
-            "characters": characters,
+            "characters": book.characters,
             "subtitle": book.llm_concept.get("title"),
             "synopsis": book.llm_concept.get("premise"),
             "chapters": chapters,

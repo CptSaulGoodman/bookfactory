@@ -18,7 +18,10 @@
         <h3 class="book-section-title">{{ _('characters') }}</h3>
         <ul class="characters-grid">
             {% for character in characters %}
-                <li class="character-item">{{ character }}</li>
+                <li class="character-item">
+                        <div class="char-name" onclick="toggleDescription({{ loop.index0 }})" style="cursor: pointer;"><strong>{{ character.name }}</strong></div>
+                        <div class="char-details" id="div-details-{{ loop.index0 }}" style="display: none;"><small>{{ character.description }}</small></div>
+                </li>
             {% endfor %}
         </ul>
     </section>
@@ -30,10 +33,21 @@
         
         {% for chapter in chapters %}
             <article class="chapter">
-                <h4 class="chapter-title">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
-                <p class="chapter-synopsis">{{ chapter.chapter_synopsis }}</p>
+                <h4 class="chapter-title" onclick="toggleDescription('chapter-' + {{ loop.index0 }})" style="cursor: pointer;">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.chapter_title }}</h4>
+                <p class="chapter-synopsis" id="div-details-chapter-{{ loop.index0 }}" style="display: none;">{{ chapter.chapter_synopsis }}</p>
             </article>
         {% endfor %}
     </section>
 </div>
+
+<script>
+function toggleDescription(index) {
+    const description = document.getElementById('div-details-' + index);
+    if (description.style.display === 'none' || description.style.display === '') {
+        description.style.display = 'block';
+    } else {
+        description.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}
