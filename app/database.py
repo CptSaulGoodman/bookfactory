@@ -1,9 +1,7 @@
 # app/database.py
 
 from sqlmodel import SQLModel
-from sqlmodel.ext.asyncio.engine import create_async_engine
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app import config
 
 # Update DATABASE_URL to be compatible with aiosqlite

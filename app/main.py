@@ -9,8 +9,8 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.on_event("startup")
-def on_startup():
-    init_db()
+async def on_startup():
+    await init_db()
 
 app.include_router(views.router)
 app.include_router(ai.router)

@@ -16,7 +16,7 @@ class BookGenerator:
         self.ai_service = ai_service if ai_service else AIService()
         self.vector_store = VectorStoreService()
     
-    def generate_initial_concept(
+    async def generate_initial_concept(
         self,
         number_of_chapters: int = config.DEFAULT_NUMBER_OF_CHAPTERS,
         world_params: str = config.DEFAULT_WORLD_PARAMS,
@@ -25,7 +25,7 @@ class BookGenerator:
         """Generate initial book concept."""
         characters_to_use = self.vector_store.get_character_context()
         
-        return self.ai_service.generate_response(
+        return await self.ai_service.generate_response(
             get_template("initial_concept",
                         number_of_chapters=number_of_chapters,
                         world_params=world_params,
@@ -33,7 +33,7 @@ class BookGenerator:
                         characters_to_use=characters_to_use)
         )
     
-    def generate_initial_concept_for_book(self, book: Book) -> BookConcept:
+    async def generate_initial_concept_for_book(self, book: Book) -> BookConcept:
         """Generate initial book concept from a Book model."""
         # Extract character information from the book model
         characters_to_use = ""
@@ -52,9 +52,9 @@ class BookGenerator:
                                 story_bits=book.user_prompt,
                                 characters_to_use=characters_to_use)
 
-        return self.ai_service.generate_response(prompt, model=BookConcept)
+        return await self.ai_service.generate_response(prompt, model=BookConcept)
 
-    def generate_character_sheet(
+    async def generate_character_sheet(
         self,
         character: Character,
         world_params: str = config.DEFAULT_WORLD_PARAMS,
@@ -67,9 +67,9 @@ class BookGenerator:
                         is_protagonist=character.is_protagonist,
                         world_params=world_params,
                         story_bits=story_bits)
-        return self.ai_service.generate_response(prompt, model=Character)
+        return await self.ai_service.generate_response(prompt, model=Character)
     
-    def generate_events(
+    async def generate_events(
         self,
         chapter_desc: str,
         number_of_events: int = config.DEFAULT_NUMBER_OF_EVENTS,
@@ -79,7 +79,7 @@ class BookGenerator:
         """Generate events for a chapter."""
         characters_to_use = self.vector_store.get_character_context()
         
-        return self.ai_service.generate_response(
+        return await self.ai_service.generate_response(
             get_template("create_events",
                         number_of_events=number_of_events,
                         world_params=world_params,
@@ -88,7 +88,7 @@ class BookGenerator:
                         characters_to_use=characters_to_use)
         )
     
-    def generate_chapter(
+    async def generate_chapter(
         self,
         chapter: int,
         total_chapters: int,
@@ -101,7 +101,7 @@ class BookGenerator:
         characters_to_use = self.vector_store.get_character_context()
         
         # Generate first part
-        part1 = self.ai_service.generate_response(
+        part1 = await self.ai_service.generate_response(
             get_template("create_chapter_part1",
                         chapter=str(chapter),
                         total_chapters=str(total_chapters),
@@ -113,7 +113,7 @@ class BookGenerator:
         )
         
         # Generate second part
-        part2 = self.ai_service.generate_response(
+        part2 = await self.ai_service.generate_response(
             get_template("create_chapter_part2",
                         chapter=str(chapter),
                         total_chapters=str(total_chapters),

@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Request, Depends, Form, Header, Query, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app import config
 import json
 
@@ -49,7 +49,7 @@ async def get_root(request: Request, lang: str = Depends(get_language)):
 async def get_bookshelf(
     request: Request,
     status: Optional[List[str]] = Query(None),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language)
 ):
     """
@@ -59,7 +59,7 @@ async def get_bookshelf(
         status = ["active"]  # Default to 'active' books
 
     book_service = BookService(session)
-    books = book_service.get_books(statuses=status)
+    books = await book_service.get_books(statuses=status)
     _ = translator.get_translator(lang)
 
     return templates.TemplateResponse(
@@ -77,13 +77,13 @@ async def get_bookshelf(
 @router.delete("/book/{book_id}", status_code=200)
 async def delete_book(
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Deletes a book and returns an empty response for HTMX.
     """
     book_service = BookService(session)
-    book_service.delete_book(book_id=book_id)
+    await book_service.delete_book(book_id=book_id)
     return HTMLResponse(content="", status_code=200)
 
 
@@ -92,7 +92,7 @@ async def delete_book(
 async def get_home(
     request: Request,
     book_id: Optional[int] = None,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
@@ -103,7 +103,7 @@ async def get_home(
     if book_id:
         book_service = BookService(session)
         try:
-            book = book_service.get_book(book_id)
+            book = await book_service.get_book(book_id)
         except ValueError:
             # Book not found, treat as a new book creation
             book = None
@@ -118,7 +118,7 @@ async def create_book(
     request: Request,
     user_prompt: str = Form(...),
     book_id: Optional[int] = Form(None),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
@@ -126,10 +126,10 @@ async def create_book(
     """
     book_service = BookService(session=session)
     if book_id:
-        book = book_service.update_book(book_id=book_id, user_prompt=user_prompt)
+        book = await book_service.update_book(book_id=book_id, user_prompt=user_prompt)
     else:
-        book = book_service.create_book_draft(user_prompt=user_prompt)
-    ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
+        book = await book_service.create_book_draft(user_prompt=user_prompt)
+    ai_comment = await book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
     _ = translator.get_translator(lang)
 
     return templates.TemplateResponse(
@@ -148,15 +148,15 @@ async def create_book(
 async def get_book_title(
     request: Request,
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
     Renders the title step for an existing book.
     """
     book_service = BookService(session=session)
-    book = book_service.get_book(book_id)
-    ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
+    book = await book_service.get_book(book_id)
+    ai_comment = await book_service.ai_service.generate_comment(user_story_idea=book.user_prompt)
     _ = translator.get_translator(lang)
 
     return templates.TemplateResponse(
@@ -175,15 +175,15 @@ async def get_book_title(
 async def get_book_world(
     request: Request,
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
     Renders the world step for an existing book.
     """
     book_service = BookService(session)
-    book = book_service.get_book(book_id)
-    ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt, user_book_title=book.title)
+    book = await book_service.get_book(book_id)
+    ai_comment = await book_service.ai_service.generate_comment(user_story_idea=book.user_prompt, user_book_title=book.title)
     _ = translator.get_translator(lang)
 
     return templates.TemplateResponse(
@@ -202,15 +202,15 @@ async def get_book_world(
 async def get_book_characters(
     request: Request,
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
     Renders the characters step for an existing book.
     """
     book_service = BookService(session)
-    book = book_service.get_book(book_id)
-    ai_comment = book_service.ai_service.generate_comment(
+    book = await book_service.get_book(book_id)
+    ai_comment = await book_service.ai_service.generate_comment(
         user_story_idea=book.user_prompt,
         user_book_title=book.title,
         user_world_description=book.world_description
@@ -236,7 +236,7 @@ async def update_book(
     book_id: int,
     title: str = Form(None),
     world_description: str = Form(None),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
@@ -246,8 +246,8 @@ async def update_book(
     _ = translator.get_translator(lang)
 
     if title:
-        book = book_service.update_book(book_id=book_id, title=title)
-        ai_comment = book_service.ai_service.generate_comment(user_story_idea=book.user_prompt, user_book_title=book.title)
+        book = await book_service.update_book(book_id=book_id, title=title)
+        ai_comment = await book_service.ai_service.generate_comment(user_story_idea=book.user_prompt, user_book_title=book.title)
         return templates.TemplateResponse(
             "wizard/_world.html",
             {
@@ -259,12 +259,12 @@ async def update_book(
             },
         )
     elif world_description:
-        book = book_service.update_book(
+        book = await book_service.update_book(
             book_id=book_id, world_description=world_description
         )
-        ai_comment = book_service.ai_service.generate_comment(
-            user_story_idea=book.user_prompt, 
-            user_book_title=book.title, 
+        ai_comment = await book_service.ai_service.generate_comment(
+            user_story_idea=book.user_prompt,
+            user_book_title=book.title,
             user_world_description=book.world_description
         )
         return templates.TemplateResponse(
@@ -304,7 +304,7 @@ async def get_character_form(
 async def save_characters(
     request: Request,
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
@@ -312,7 +312,7 @@ async def save_characters(
     and then finalizes the book.
     """
     book_service = BookService(session=session)
-    book = book_service.get_book(book_id)
+    book = await book_service.get_book(book_id)
     form_data = await request.form()
     
     characters_data = []
@@ -320,8 +320,8 @@ async def save_characters(
     # Process dynamic form fields
     character_indices = sorted(
         list(set([
-            int(k.split('_')[1]) 
-            for k in form_data.keys() 
+            int(k.split('_')[1])
+            for k in form_data.keys()
             if k.startswith('name_') and len(k.split('_')) > 1 and k.split('_')[1].isdigit()
         ]))
     )
@@ -341,11 +341,11 @@ async def save_characters(
             })
 
     # Save characters to the database
-    book_service.save_characters_for_book(book_id=book_id, characters_data=characters_data)
-    book_service.update_book(book_id=book_id, chapters_count=config.DEFAULT_NUMBER_OF_CHAPTERS)
+    await book_service.save_characters_for_book(book_id=book_id, characters_data=characters_data)
+    await book_service.update_book(book_id=book_id, chapters_count=config.DEFAULT_NUMBER_OF_CHAPTERS)
     
 
-    ai_comment = book_service.ai_service.generate_comment(
+    ai_comment = await book_service.ai_service.generate_comment(
         user_story_idea=book.user_prompt,
         user_book_title=book.title,
         user_world_description=book.world_description,
@@ -370,7 +370,7 @@ async def save_chapters(
     request: Request,
     book_id: int,
     chapters_count: int = Form(...),
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
@@ -378,10 +378,10 @@ async def save_chapters(
     and then finalizes the book.
     """
     book_service = BookService(session=session)
-    book_service.update_book(book_id=book_id, chapters_count=chapters_count)
+    await book_service.update_book(book_id=book_id, chapters_count=chapters_count)
     
     # Fetch the full book details for the processing screen
-    book = book_service.get_book(book_id)
+    book = await book_service.get_book(book_id)
     _ = translator.get_translator(lang)
 
     return templates.TemplateResponse(
@@ -399,14 +399,14 @@ async def save_chapters(
 @router.post("/book/{book_id}/generate")
 async def generate_book(
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ):
     """
     Finalizes and generates the book, then returns a redirect response
     for HTMX.
     """
     book_service = BookService(session=session)
-    book_service.finalize_and_generate_book(book_id=book_id)
+    await book_service.finalize_and_generate_book(book_id=book_id)
 
     # HTMX needs a 200 OK with a HX-Redirect header for client-side redirect
     return HTMLResponse(
@@ -420,15 +420,15 @@ async def generate_book(
 async def get_book_final(
     request: Request,
     book_id: int,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
     """
     Displays the final, generated book.
     """
     book_service = BookService(session)
-    book = book_service.get_book(book_id)
-    _ = translator.get_translator(lang) 
+    book = await book_service.get_book(book_id)
+    _ = translator.get_translator(lang)
 
     characters = []
     if book.characters:
