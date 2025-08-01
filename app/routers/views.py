@@ -225,7 +225,7 @@ async def get_book_characters(
             "ai_comment": ai_comment,
             "_": _,
             "lang": lang,
-            "character_index": len(book.characters) if book.characters else 0,
+            "characters_index": len(book.characters) if book.characters else 0,
         },
     )
 
@@ -359,6 +359,7 @@ async def save_characters(
             "request": request,
             "book": book,
             "ai_comment": ai_comment,
+            "characters_data": characters_data,
             "_": _,
             "lang": lang
         },

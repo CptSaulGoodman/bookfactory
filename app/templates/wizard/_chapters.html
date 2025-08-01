@@ -15,12 +15,13 @@
                 <h3>{{ _('wizard_timeline_world_setting') }}</h3>
                 <p>"{{ book.world_description }}"</p>
             </div>
-        
-            <h3>{{ _('characters_title') }}</h3>
-            <p>{{ _('characters_description') }}</p>
-                {% if ai_comment %}
-                    {% include "wizard/_comment.html" %}
-                {% endif %}
+            <div class="timeline-item-completed">
+                <h3>{{ _('characters_title') }}</h3>
+                <p>{% for character in characters_data %}{{ character.name }} {% endfor %}</p>
+                    {% if ai_comment %}
+                        {% include "wizard/_comment.html" %}
+                    {% endif %}
+            </div>
 
             <h3>{{ _('chapters_title') }}</h3>
             <p>{{ _('chapters_description') }}</p>

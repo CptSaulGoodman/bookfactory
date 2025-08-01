@@ -4,6 +4,7 @@ from typing import List, Optional
 from sqlmodel import Session, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy import delete
 from app.models.models import Book, Character
 from app.services.ai_service import AIService
 from app.services.book_generator import BookGenerator
@@ -82,15 +83,17 @@ class BookService:
         """
         Saves character data for a specific book.
         """
+        # Delete all existing characters for the book using proper SQLAlchemy delete
+        delete_query = delete(Character).where(Character.book_id == book_id)
+        await self.session.execute(delete_query)
+        await self.session.commit()  # Commit the deletions first
+        
+        # Clear the session to remove references to deleted objects
+        self.session.expunge_all()
+
+        # Re-fetch the book after deletion to get a clean state
         book = await self.get_book(book_id)
         
-        # Delete all existing characters for the book
-        delete_query = select(Character).where(Character.book_id == book_id)
-        result = await self.session.execute(delete_query)
-        existing_characters = result.scalars().all()
-        for character in existing_characters:
-            self.session.delete(character)
-
         # Simple validation: Ensure only one protagonist
         protagonist_count = sum(1 for char in characters_data if char.get('is_protagonist'))
         if protagonist_count != 1:
