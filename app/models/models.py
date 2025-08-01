@@ -9,7 +9,7 @@ the ORM layer for database interactions.
 from datetime import datetime
 from typing import List, Optional
 
-from sqlmodel import Field, Relationship, SQLModel, Column, JSON
+from sqlmodel import Field, Relationship, SQLModel, Column, JSON, Text
 
 
 class Book(SQLModel, table=True):
@@ -31,7 +31,9 @@ class Chapter(SQLModel, table=True):
     chapter_number: int
     title: str
     synopsis: str
-    content: Optional[str] = None
+    status: str = Field(default="draft")
+    content: Optional[str] = Field(default=None, sa_column=Column(Text))
+    user_directives: Optional[str] = Field(default=None, sa_column=Column(Text))
 
     book_id: Optional[int] = Field(default=None, foreign_key="book.id")
     book: Optional[Book] = Relationship(back_populates="chapters")
