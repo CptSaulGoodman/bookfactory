@@ -50,3 +50,8 @@ summary: "Zusammenfassung"
 role: "Rolle"
 protagonist: "Hauptfigur"
 supporting: "Nebenfigur"
+
+error_title: "Generierung fehlgeschlagen"
+error_message: "Beim Generieren deines Buches ist ein unerwarteter Fehler aufgetreten. Du kannst es erneut versuchen oder zu deinem Bücherregal zurückkehren."
+retry_button: "Erneut generieren"
+bookshelf_button: "Zurück zum Bücherregal"

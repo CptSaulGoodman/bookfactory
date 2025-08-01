@@ -399,22 +399,47 @@ async def save_chapters(
 
 @router.post("/book/{book_id}/generate")
 async def generate_book(
+    request: Request,
     book_id: int,
     session: AsyncSession = Depends(get_session),
+    lang: str = Depends(get_language),
 ):
     """
     Finalizes and generates the book, then returns a redirect response
-    for HTMX.
+    for HTMX or an error partial.
     """
     book_service = BookService(session=session)
-    await book_service.finalize_and_generate_book(book_id=book_id)
+    try:
+        await book_service.finalize_and_generate_book(book_id=book_id)
+        
+        # On success, redirect
+        return HTMLResponse(
+            content="",
+            status_code=200,
+            headers={"HX-Redirect": f"/book/{book_id}"},
+        )
+    except Exception as e:
+        logging.error(f"Error generating book {book_id}: {e}", exc_info=True)
+        
+        # Mark book as failed
+        await book_service.update_book_status(book_id, "failed")
+        
+        # Re-fetch the book to pass to the template
+        book = await book_service.get_book(book_id)
 
-    # HTMX needs a 200 OK with a HX-Redirect header for client-side redirect
-    return HTMLResponse(
-        content="",
-        status_code=200,
-        headers={"HX-Redirect": f"/book/{book_id}"},
-    )
+        # Return error partial
+        _ = translator.get_translator(lang)
+        return templates.TemplateResponse(
+            "wizard/_error.html",
+            {
+                "request": request,
+                "book": book,
+                "_": _,
+                "lang": lang,
+                "error_details": str(e)
+            },
+            status_code=500
+        )
 
 
 @router.get("/book/{book_id}", response_class=HTMLResponse)

@@ -79,6 +79,17 @@ class BookService:
         await self.session.refresh(book)
         return book
 
+    async def update_book_status(self, book_id: int, status: str) -> Book:
+        """
+        Updates the status of a book.
+        """
+        book = await self.get_book(book_id)
+        book.status = status
+        self.session.add(book)
+        await self.session.commit()
+        await self.session.refresh(book)
+        return book
+
     async def save_characters_for_book(self, book_id: int, characters_data: list[dict]) -> None:
         """
         Saves character data for a specific book.

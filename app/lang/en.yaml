@@ -50,3 +50,8 @@ summary: "Summary"
 role: "Role"
 protagonist: "Protagonist"
 supporting: "Supporting"
+
+error_title: "Generation Failed"
+error_message: "An unexpected error occurred while generating your book. You can retry or return to your bookshelf."
+retry_button: "Retry Generation"
+bookshelf_button: "Back to Bookshelf"
