@@ -9,7 +9,7 @@ OPENAI_API_BASE = "http://192.168.22.251:8090/v1"
 OPENAI_API_KEY = "ollama"  # For Ollama, the API key can be any string
 
 # AI Model Configuration
-LLM_MODEL = "gemma-3-4b"
+LLM_MODEL = "gemma-3-12b"
 EMBEDDING_MODEL = "embedder"
 
 # Database Configuration

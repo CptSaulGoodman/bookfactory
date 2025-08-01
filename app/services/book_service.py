@@ -40,6 +40,8 @@ class BookService:
             selectinload(Book.chapters)
         ).order_by(Book.created_at.desc())
         if statuses:
+            if "draft" in statuses:
+                statuses.append("failed")
             query = query.where(Book.status.in_(statuses))
         
         result = await self.session.execute(query)
