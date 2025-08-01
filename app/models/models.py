@@ -1,3 +1,11 @@
+"""
+SQLModel classes for database persistence.
+
+This module contains SQLModel classes that define the application's database schema.
+These models are used for database operations and represent the persistent data structure
+of the Book Factory application. They handle relationships between entities and provide
+the ORM layer for database interactions.
+"""
 from datetime import datetime
 from typing import List, Optional
 

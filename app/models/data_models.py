@@ -1,5 +1,13 @@
 # app/models/data_models.py
-"""Legacy data models for CLI and stateless generation."""
+"""
+Pydantic and dataclass models for data interchange.
+
+This module contains Pydantic BaseModel and dataclass objects used for data interchange,
+primarily for structuring LLM outputs and handling data from complex forms. These models
+are not persisted to the database directly - they serve as intermediate data structures
+for API responses, AI model outputs, and form validation. They provide type safety and
+validation for data flowing between services and external systems.
+"""
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional

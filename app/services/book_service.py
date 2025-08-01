@@ -122,7 +122,10 @@ class BookService:
 
         llm_concept = self.book_generator.generate_initial_concept_for_book(book)
         
-        # Convert the Pydantic model to a dictionary for database storage
+        # Convert the Pydantic BookConcept model to a dictionary for database storage
+        # The llm_concept is a BookConcept Pydantic model from data_models.py that contains
+        # structured LLM output. We convert it to a dict to store in the Book SQLModel's
+        # llm_concept JSON field for database persistence.
         book.llm_concept = llm_concept.dict()
 
         book.status = "active"

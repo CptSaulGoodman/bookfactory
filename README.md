@@ -50,7 +50,7 @@ app/
 
 3. **Install dependencies**
    ```bash
-   pip install langchain-openai langchain-core langchain-chroma httpx
+   pip install -r requirements.txt
    ```
 
 4. **Configure your AI Provider**
