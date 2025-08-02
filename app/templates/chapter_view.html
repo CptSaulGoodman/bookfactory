@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.title }} - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="chapter-view">
+    <header class="chapter-header">
+        <h1 class="chapter-title">{{ book.title }}</h1>
+        <h2 class="book-title">{{ chapter.title }}</h2>
+    </header>
+
+    <div class="chapter-content">
+        {{ chapter.content }}
+    </div>
+
+    <div class="chapter-navigation">
+        {% if previous_chapter_id %}
+            <a href="/book/{{ book.id }}/chapter/{{ previous_chapter_id }}" class="btn btn-secondary">{{ _('previous_chapter') }}</a>
+        {% else %}
+            <button class="btn btn-secondary" disabled>{{ _('previous_chapter') }}</button>
+        {% endif %}
+        
+        <a href="/book/{{ book.id }}" class="btn btn-primary">{{ _('back_to_overview') }}</a>
+        
+        {% if next_chapter_id %}
+            <a href="/book/{{ book.id }}/chapter/{{ next_chapter_id }}" class="btn btn-secondary">{{ _('next_chapter') }}</a>
+        {% else %}
+            <button class="btn btn-secondary" disabled>{{ _('next_chapter') }}</button>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

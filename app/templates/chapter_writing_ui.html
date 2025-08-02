@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('writing_chapter') }} {{ chapter.chapter_number }}{% endblock %}
+
+{% block content %}
+<div class="chapter-writing-container">
+    <div class="chapter-header">
+        <h2>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h2>
+        <p class="chapter-synopsis">{{ chapter.synopsis }}</p>
+    </div>
+    
+    <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.id }}/generate" 
+          hx-swap="none"
+          hx-ext="sse"
+          sse-connect="sse">
+        <input type="hidden" name="part" value="1">
+        <div class="form-group">
+            <label for="user_directives">What would you like to include in this chapter?</label>
+            <textarea id="user_directives" name="user_directives" class="form-control" rows="5" placeholder="Add your ideas, themes, or specific elements you want in this chapter..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Start Writing</button>
+    </form>
+    
+    <div class="chapter-content-container" style="display: none;">
+        <div id="chapter-content" 
+             hx-ext="sse"
+             sse-swap="message"
+             hx-swap="beforeend">
+            <!-- Chapter content will be streamed here -->
+        </div>
+    </div>
+    
+    <div class="writing-status" id="writing-status" style="display: none;">
+        <div class="spinner"></div>
+        <p>{{ _('writing_in_progress') }}</p>
+    </div>
+</div>
+
+<script>
+    htmx.onLoad(function(elt) {
+        const sseElement = htmx.find(elt, '[sse-swap]');
+
+        if (sseElement) {
+            sseElement.addEventListener('htmx:sseMessage', function(evt) {
+                // The data is already in the correct format, no need to parse it
+                const data = evt.detail.data;
+                
+                // Append the text content to the chapter content area
+                const chapterContent = document.getElementById('chapter-content');
+                if (chapterContent) {
+                    // Create a text node to prevent HTML injection
+                    chapterContent.appendChild(document.createTextNode(data));
+                }
+            });
+
+            sseElement.addEventListener('htmx:sseError', function(evt) {
+                console.error('SSE Error:', evt);
+                const statusElement = document.getElementById('writing-status');
+                if (statusElement) {
+                    statusElement.innerHTML = '<p style="color: red;">{{ _("error_writing") }}</p>';
+                }
+            });
+
+            // Listen for the complete event
+            sseElement.addEventListener('htmx:sseEvent', function(evt) {
+                if (evt.detail.name === 'complete') {
+                    const statusElement = document.getElementById('writing-status');
+                    if (statusElement) {
+                        statusElement.style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
+
+    // Handle form submission to show spinner
+    document.addEventListener('htmx:beforeRequest', function(evt) {
+        if (evt.detail.elt.tagName === 'FORM') {
+            evt.detail.elt.style.display = 'none';
+            const contentContainer = document.querySelector('.chapter-content-container');
+            const writingStatus = document.getElementById('writing-status');
+            if (contentContainer) contentContainer.style.display = 'block';
+            if (writingStatus) writingStatus.style.display = 'flex';
+        }
+    });
+</script>
+{% endblock %}

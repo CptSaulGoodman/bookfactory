@@ -31,6 +31,13 @@ class Chapter(SQLModel, table=True):
     chapter_number: int
     title: str
     synopsis: str
+    # Status field for the interactive writing workflow:
+    # - draft: Not yet started
+    # - writing_part1: Part 1 is being generated
+    # - part1_completed: Part 1 is done, waiting for user input for Part 2
+    # - writing_part2: Part 2 is being generated
+    # - completed: Both parts are finished
+    # - failed: An error occurred during generation
     status: str = Field(default="draft")
     content: Optional[str] = Field(default=None, sa_column=Column(Text))
     user_directives: Optional[str] = Field(default=None, sa_column=Column(Text))

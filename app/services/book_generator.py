@@ -1,18 +1,24 @@
 """Book generation logic and orchestration."""
 
 import json
+from typing import AsyncGenerator, TYPE_CHECKING
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 from app.services.ai_service import AIService
 from app.services.vector_store import VectorStoreService
 from app.prompts.templates import get_template
 from app import config
 from app.models.data_models import BookConcept, CharacterCollection
-from app.models.models import Book, Character
+from app.models.models import Book, Character, Chapter
+
+if TYPE_CHECKING:
+    from app.services.book_service import BookService
 
 
 class BookGenerator:
     """Main service for book generation operations."""
     
-    def __init__(self, ai_service: AIService = None): # Modified init
+    def __init__(self, ai_service: AIService = None):
         self.ai_service = ai_service if ai_service else AIService()
         self.vector_store = VectorStoreService()
     
@@ -88,44 +94,46 @@ class BookGenerator:
                         characters_to_use=characters_to_use)
         )
     
-    async def generate_chapter(
-        self,
-        chapter: int,
-        total_chapters: int,
-        chapter_desc: str,
-        chapter_events: str,
-        world_params: str = config.DEFAULT_WORLD_PARAMS,
-        story_bits: str = config.DEFAULT_STORY_BITS
-    ) -> tuple[str, str]:
-        """Generate a complete chapter in two parts."""
-        characters_to_use = self.vector_store.get_character_context()
+    # Commenting out the old generate_chapter method
+    # async def generate_chapter(
+    #     self,
+    #     chapter: int,
+    #     total_chapters: int,
+    #     chapter_desc: str,
+    #     chapter_events: str,
+    #     world_params: str = config.DEFAULT_WORLD_PARAMS,
+    #     story_bits: str = config.DEFAULT_STORY_BITS
+    # ) -> tuple[str, str]:
+    #     """Generate a complete chapter in two parts."""
+    #     characters_to_use = self.vector_store.get_character_context()
         
-        # Generate first part
-        part1 = await self.ai_service.generate_response(
-            get_template("create_chapter_part1",
-                        chapter=str(chapter),
-                        total_chapters=str(total_chapters),
-                        world_params=world_params,
-                        story_bits=story_bits,
-                        chapter_desc=chapter_desc,
-                        characters_to_use=characters_to_use,
-                        chapter_events=chapter_events)
-        )
+    #     # Generate first part
+    #     part1 = await self.ai_service.generate_response(
+    #         get_template("create_chapter_part1",
+    #                     chapter=str(chapter),
+    #                     total_chapters=str(total_chapters),
+    #                     world_params=world_params,
+    #                     story_bits=story_bits,
+    #                     chapter_desc=chapter_desc,
+    #                     characters_to_use=characters_to_use,
+    #                     chapter_events=chapter_events)
+    #     )
         
-        # Generate second part
-        part2 = await self.ai_service.generate_response(
-            get_template("create_chapter_part2",
-                        chapter=str(chapter),
-                        total_chapters=str(total_chapters),
-                        world_params=world_params,
-                        story_bits=story_bits,
-                        chapter_desc=chapter_desc,
-                        characters_to_use=characters_to_use,
-                        result=part1)
-        )
+    #     # Generate second part
+    #     part2 = await self.ai_service.generate_response(
+    #         get_template("create_chapter_part2",
+    #                     chapter=str(chapter),
+    #                     total_chapters=str(total_chapters),
+    #                     world_params=world_params,
+    #                     story_bits=story_bits,
+    #                     chapter_desc=chapter_desc,
+    #                     characters_to_use=characters_to_use,
+    #                     result=part1)
+    #     )
         
-        return part1, part2
+    #     return part1, part2
+    
     
     def setup_characters(self, characters: CharacterCollection) -> None:
         """Setup character embeddings in vector store."""
-        self.vector_store.embed_characters(characters) 
+        self.vector_store.embed_characters(characters)

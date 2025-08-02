@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="book-overview">
+    <header class="book-header">
+        <h1 class="book-overview-title">{{ book.title }}</h1>
+        <h2 class="book-subtitle">{{ subtitle }}</h2>
+        <div class="book-synopsis">
+            <em>{{ synopsis }}</em>
+        </div>
+    </header>
+
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section">
+        <h3 class="book-section-title">{{ _('characters') }}</h3>
+        <ul class="characters-grid">
+            {% for character in characters %}
+                <li class="character-item">
+                        <div class="char-name" onclick="toggleDescription({{ loop.index0 }})" style="cursor: pointer;"><strong>{{ character.name }}</strong></div>
+                        <div class="char-details" id="div-details-{{ loop.index0 }}" style="display: none;"><small>{{ character.description }}</small></div>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section chapters-container">
+        <h3 class="book-section-title">{{ _('chapters') }}</h3>
+        
+        {% for chapter in book.chapters %}
+            <article class="chapter">
+                <h4 class="chapter-title" onclick="toggleDescription('chapter-' + {{ loop.index0 }})" style="cursor: pointer;">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h4>
+                <p class="chapter-synopsis" id="div-details-chapter-{{ loop.index0 }}" style="display: none;">{{ chapter.synopsis }}</p>
+                
+                <div class="chapter-actions">
+                    {% if chapter.status == 'completed' %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.id }}" class="btn btn-primary">{{ _('read_chapter') }}</a>
+                    {% elif chapter.status == 'draft' and chapter.chapter_number == next_chapter_to_write_number %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.id }}/write" class="btn btn-primary">{{ _('write_this_chapter') }}</a>
+                    {% elif chapter.status == 'writing' %}
+                        <div class="writing-indicator">
+                            <div class="spinner"></div>
+                            <span>{{ _('writing_in_progress') }}</span>
+                        </div>
+                    {% elif chapter.status == 'failed' %}
+                        <div class="error-message">
+                            <span>{{ _('generation_failed') }}</span>
+                            <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.id }}/write" hx-target=".chapters-container">
+                                <button type="submit" class="btn btn-secondary">{{ _('retry') }}</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+</div>
+
+<script>
+function toggleDescription(index) {
+    const description = document.getElementById('div-details-' + index);
+    if (description.style.display === 'none' || description.style.display === '') {
+        description.style.display = 'block';
+    } else {
+        description.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
