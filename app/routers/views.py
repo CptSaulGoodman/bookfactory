@@ -666,7 +666,6 @@ async def generate_chapter(
         logging.error(f"Error in generate_chapter for chapter {chapter_id}: {e}", exc_info=True)
         raise
 
-# Add this new GET endpoint for SSE
 @router.get("/book/{book_id}/chapter/{chapter_id}/generate-stream")
 async def generate_chapter_stream(
     request: Request,
@@ -701,9 +700,6 @@ async def generate_chapter_stream(
         prompt = await book_service.build_chapter_prompt(chapter, part, user_directives)
         logging.info(f"Successfully built prompt for chapter {chapter_id}")
 
-        # Create background tasks for finalization
-        background_tasks = BackgroundTasks()
-
         async def stream_wrapper():
             streaming_session = None
             try:
@@ -718,7 +714,7 @@ async def generate_chapter_stream(
                     async for chunk in streaming_book_service.ai_service.generate_response_stream(prompt):
                         content = chunk.get("data", "")
                         full_content += content
-                        logging.info(f"Streaming chunk for chapter {chapter_id}: {content}")
+                        logging.debug(f"Streaming chunk for chapter {chapter_id}: {content}")
                         
                         yield ServerSentEvent(
                             data=content,
@@ -728,8 +724,10 @@ async def generate_chapter_stream(
                     
                     logging.info(f"AI streaming completed for chapter {chapter_id}, content length: {len(full_content)}")
                     
-                    # Schedule background finalization
-                    background_tasks.add_task(finalize_chapter_writing, chapter_id, full_content, part)
+                    # Call finalization directly since we can't use BackgroundTasks in GET
+                    # We'll do this in a separate task to avoid blocking the response
+                    import asyncio
+                    asyncio.create_task(finalize_chapter_writing(chapter_id, full_content, part))
 
                     yield ServerSentEvent(
                         data="Stream finished.",

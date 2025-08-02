@@ -289,27 +289,32 @@ class BookService:
                     logging.warning(f"Error parsing chapter events for chapter {chapter.id}: {e}")
                     chapter_events = ""
 
+            # TODO: Add RAG retrieved context
+            rag_retrieved_context = ""
+
             template_name = f"create_chapter_part{part}"
             prompt_params = {
                 "chapter": str(chapter.chapter_number),
+                "title": chapter.title,
                 "total_chapters": str(len(book.chapters)),
+                
                 "world_params": book.world_description,
                 "story_bits": book.user_prompt,
                 "chapter_desc": chapter.synopsis,
                 "characters_to_use": characters_to_use,
+                "chapter_events": chapter_events,
+                
+                "rag_retrieved_context": rag_retrieved_context,
+                "user_directives": user_directives,
             }
             
-            if part == 1:
-                prompt_params["chapter_events"] = chapter_events
-            else: # part == 2
-                prompt_params["result"] = chapter.content # Pass Part 1 content
+            if part == 2:
+                prompt_params["previous_part_content"] = chapter.content # Pass Part 1 content
 
             prompt = get_template(template_name, **prompt_params)
-
-            if user_directives:
-                prompt += f"\n\nAdditional instructions for this part by the user: {user_directives}"
             
             logging.info(f"Successfully built prompt for chapter {chapter.id}, part {part}")
+            logging.info(f"Prompt: {prompt}")
             return prompt
             
         except Exception as e:

@@ -14,7 +14,7 @@
         
         <!-- This is where the streamed content will appear. -->
         <div id="chapter-content" class="chapter-content-container">
-            {% if chapter.content %}{{ chapter.content | safe | nl2br }}{% endif %}
+            {% if chapter.content %}{{ chapter.content | safe }}{% endif %}
         </div>
 
         <!-- This form will be hidden after submission -->
@@ -86,7 +86,7 @@
         
         eventSource.addEventListener('complete', function(event) {
             eventSource.close();
-            setTimeout(() => { window.location.reload(); }, 500);
+            //setTimeout(() => { window.location.reload(); }, 500);
         });
         
         eventSource.addEventListener('error', function(event) {
