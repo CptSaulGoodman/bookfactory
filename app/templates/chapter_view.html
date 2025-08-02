@@ -5,12 +5,12 @@
 {% block content %}
 <div class="chapter-view">
     <header class="chapter-header">
-        <h1 class="chapter-title">{{ book.title }}</h1>
-        <h2 class="book-title">{{ chapter.title }}</h2>
+        <h1 class="chapter-title">{{ chapter.title }}</h1>
+        <h2 class="chapter-subtitle">{{ book.title }} - {{ _('chapter') }} {{ chapter.chapter_number }}</h2>
     </header>
 
     <div class="chapter-content">
-        {{ chapter.content }}
+        {{ formatted_content | safe }}
     </div>
 
     <div class="chapter-navigation">

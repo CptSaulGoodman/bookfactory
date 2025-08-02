@@ -773,14 +773,14 @@
     padding: var(--space-md);
   }
 
-  .book-header {
+  .book-header, .chapter-header {
     text-align: center;
     margin-bottom: var(--space-xl);
     padding-bottom: var(--space-lg);
   }
 
   /* Main book overview title - large and prominent */
-  .book-overview-title {
+  .book-overview-title, .chapter-title {
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     margin: 0 0 var(--space-sm) 0;
     color: var(--color-binding);
@@ -790,7 +790,7 @@
   }
 
   /* Keep existing book-title for sidebar links */
-  .book-title {
+  .book-title, .chapter-subtitle {
     margin: var(--space-md) 0;
     color: var(--color-binding);
     line-height: 1.2;
@@ -811,7 +811,7 @@
     font-weight: 400;
   }
 
-  .book-synopsis {
+  .book-synopsis, .chapter-synopsis  {
     font-style: italic;
     font-size: 1.1rem;
     line-height: 1.6;
@@ -891,21 +891,6 @@
     box-shadow: 0 4px 12px var(--color-shadow);
   }
 
-  .chapter-title {
-    color: var(--color-binding);
-    font-size: 1.2rem;
-    margin: 0 0 var(--space-md) 0;
-    font-weight: 700;
-    line-height: 1.3;
-  }
-
-  .chapter-synopsis {
-    line-height: 1.6;
-    color: var(--color-ink);
-    margin: 0;
-    text-align: justify;
-    hyphens: auto;
-  }
 
   /* Mobile optimizations */
   @media (max-width: 767px) {
@@ -913,12 +898,12 @@
       padding: var(--space-sm);
     }
     
-    .book-header {
+    .book-header, .chapter-header {
       margin-bottom: var(--space-lg);
       padding-bottom: var(--space-md);
     }
     
-    .book-synopsis {
+    .book-synopsis, .chapter-synopsis {
       padding: var(--space-sm);
       font-size: 1rem;
     }
@@ -944,7 +929,7 @@
       gap: var(--space-md);
     }
     
-    .book-synopsis {
+    .book-synopsis, .chapter-synopsis  {
       padding: var(--space-lg);
       font-size: 1.15rem;
     }

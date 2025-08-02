@@ -537,6 +537,8 @@ async def get_chapter_view(
             previous_chapter_id = sorted_chapters[current_index - 1].id
         if current_index < len(sorted_chapters) - 1:
             next_chapter_id = sorted_chapters[current_index + 1].id
+
+    formatted_content = parse_markdown(chapter.content) if chapter.content else ""
     
     return templates.TemplateResponse(
         "chapter_view.html",
@@ -548,9 +550,40 @@ async def get_chapter_view(
             "next_chapter_id": next_chapter_id,
             "_": _,
             "lang": lang,
+            "formatted_content": formatted_content,
         },
     )
 
+
+def parse_markdown(text: str) -> str:
+    """
+    Simple markdown parser for paragraphs, italic, and bold.
+    """
+    if not text:
+        return ""
+    
+    # Split into paragraphs (single newlines)
+    paragraphs = text.split('\n')
+    
+    formatted_paragraphs = []
+    for paragraph in paragraphs:
+        if not paragraph.strip():
+            continue
+            
+        # Convert **bold** to <strong>bold</strong>
+        parsed = paragraph.replace('**', '<strong>', 1)
+        while '**' in parsed:
+            parsed = parsed.replace('**', '</strong>', 1)
+        
+        # Convert *italic* to <em>italic</em>
+        parsed = parsed.replace('*', '<em>', 1)
+        while '*' in parsed:
+            parsed = parsed.replace('*', '</em>', 1)
+        
+        # Wrap in paragraph tags
+        formatted_paragraphs.append(f"<p>{parsed}</p>")
+    
+    return ''.join(formatted_paragraphs)
 
 @router.get("/book/{book_id}/chapter/{chapter_id}/write", response_class=HTMLResponse)
 async def get_chapter_writing_ui(
@@ -580,6 +613,9 @@ async def get_chapter_writing_ui(
         if not chapter:
             raise ValueError(f"Chapter with ID {chapter_id} not found.")
         
+        # Parse markdown for existing content
+        formatted_content = parse_markdown(chapter.content) if chapter.content else ""
+        
         # Return the writing room template
         return templates.TemplateResponse(
             "writing_room.html",
@@ -587,6 +623,7 @@ async def get_chapter_writing_ui(
                 "request": request,
                 "book": book,
                 "chapter": chapter,
+                "formatted_content": formatted_content,
                 "_": _,
                 "lang": lang,
             },

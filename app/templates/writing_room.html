@@ -4,17 +4,18 @@
 
 {% block content %}
 <div class="chapter-writing-container">
-    <div class="chapter-header">
-        <h2>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h2>
+    <header class="chapter-header">
+        <h1 class="chapter-title">{{ chapter.title }}</h1>
+        <h2 class="chapter-subtitle">{{ book.title }} - {{ _('chapter') }} {{ chapter.chapter_number }}</h2>
         <p class="chapter-synopsis">{{ chapter.synopsis }}</p>
-    </div>
+    </header>
 
     <!-- This div will be replaced by the streaming content -->
     <div id="writing-interface">
         
         <!-- This is where the streamed content will appear. -->
         <div id="chapter-content" class="chapter-content-container">
-            {% if chapter.content %}{{ chapter.content | safe }}{% endif %}
+            {% if formatted_content %}{{ formatted_content | safe }}{% endif %}
         </div>
 
         <!-- This form will be hidden after submission -->
@@ -63,6 +64,60 @@
 </div>
 
 <script>
+    // Simple markdown parser for paragraphs, italic, and bold
+    function parseMarkdown(text) {
+        // Split into paragraphs (single newlines)
+        const paragraphs = text.split('\n');
+        
+        return paragraphs.map(paragraph => {
+            if (!paragraph.trim()) return '';
+            
+            // Convert **bold** to <strong>bold</strong>
+            let parsed = paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert *italic* to <em>italic</em>
+            parsed = parsed.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Wrap in paragraph tags
+            return `<p>${parsed}</p>`;
+        }).join('');
+    }
+
+    // Auto-scroll functionality
+    let autoScroll = true;
+    let userScrolled = false;
+    const contentDiv = document.getElementById('chapter-content');
+    const container = document.getElementById('writing-interface');
+
+    // Check if user is at the bottom
+    function isAtBottom() {
+        return container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
+    }
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        if (autoScroll) {
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    // Handle user scroll events
+    container.addEventListener('scroll', function() {
+        if (userScrolled) {
+            // If user scrolls to bottom, re-enable auto-scroll
+            if (isAtBottom()) {
+                autoScroll = true;
+                userScrolled = false;
+            }
+        } else {
+            // If user scrolls up, disable auto-scroll
+            if (!isAtBottom()) {
+                autoScroll = false;
+                userScrolled = true;
+            }
+        }
+    });
+
     document.getElementById('chapter-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -73,15 +128,28 @@
         // Clear the content area
         document.getElementById('chapter-content').innerHTML = '';
         
+        // Reset scroll state
+        autoScroll = true;
+        userScrolled = false;
+        
         // Show the spinner
         document.querySelector('.writing-status').style.display = 'block';
         
         // Create SSE connection
         const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.id }}/generate-stream?part=${part}&user_directives=${encodeURIComponent(userDirectives)}`);
         
+        let accumulatedText = '';
+        
         eventSource.onmessage = function(event) {
             const contentDiv = document.getElementById('chapter-content');
-            contentDiv.innerHTML += event.data;
+            accumulatedText += event.data;
+            
+            // Parse markdown and update content
+            const parsedHtml = parseMarkdown(accumulatedText);
+            contentDiv.innerHTML = parsedHtml;
+            
+            // Auto-scroll to bottom
+            scrollToBottom();
         };
         
         eventSource.addEventListener('complete', function(event) {
