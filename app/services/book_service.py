@@ -9,6 +9,7 @@ from app.models.models import Book, Character, Chapter
 from app.services.ai_service import AIService
 from app.services.book_generator import BookGenerator
 from app.prompts.templates import get_template
+import logging
 
 class BookService:
     def __init__(self, session: AsyncSession):
@@ -43,30 +44,42 @@ class BookService:
         """
         Retrieves a book by its ID.
         """
-        query = select(Book).where(Book.id == book_id).options(
-            selectinload(Book.characters),
-            selectinload(Book.chapters)
-        )
-        result = await self.session.execute(query)
-        book = result.scalar_one_or_none()
-        if not book:
-            # In a real app, a more specific exception would be better.
-            raise ValueError(f"Book with ID {book_id} not found.")
+        logging.info(f"Retrieving book {book_id}")
         
-        # Check if we need to create chapters from the concept
-        if book and book.llm_concept and not book.chapters:
-            # Create chapters from the concept data
-            await self._create_chapters_from_concept(book)
-            
-            # Re-fetch the book to load the newly created chapters relationship
+        try:
             query = select(Book).where(Book.id == book_id).options(
                 selectinload(Book.characters),
                 selectinload(Book.chapters)
             )
             result = await self.session.execute(query)
             book = result.scalar_one_or_none()
-        
-        return book
+            
+            if not book:
+                logging.error(f"Book with ID {book_id} not found")
+                raise ValueError(f"Book with ID {book_id} not found.")
+            
+            logging.info(f"Retrieved book {book_id} with {len(book.chapters)} chapters and {len(book.characters)} characters")
+            
+            # Check if we need to create chapters from the concept
+            if book and book.llm_concept and not book.chapters:
+                logging.info(f"Creating chapters from concept for book {book_id}")
+                # Create chapters from the concept data
+                await self._create_chapters_from_concept(book)
+                
+                # Re-fetch the book to load the newly created chapters relationship
+                query = select(Book).where(Book.id == book_id).options(
+                    selectinload(Book.characters),
+                    selectinload(Book.chapters)
+                )
+                result = await self.session.execute(query)
+                book = result.scalar_one_or_none()
+                logging.info(f"Re-fetched book {book_id} after creating chapters")
+            
+            return book
+            
+        except Exception as e:
+            logging.error(f"Error retrieving book {book_id}: {e}", exc_info=True)
+            raise
 
     async def get_books(self, statuses: Optional[List[str]] = None) -> List[Book]:
         """
@@ -239,58 +252,66 @@ class BookService:
 
     async def build_chapter_prompt(self, chapter: Chapter, part: int, user_directives: str) -> str:
         """Builds the prompt for chapter generation."""
-        book = await self.get_book(chapter.book_id)
-
-        # Get character context
-        characters_to_use = ""
-        if book.characters:
-            character_descriptions = [
-                f"name: {char.name}, role: {'protagonist' if char.is_protagonist else 'supporting'}, summary: {char.description}"
-                for char in book.characters
-            ]
-            characters_to_use = "\n".join(character_descriptions)
-
-        # Get chapter events from the stored concept
-        chapter_events = ""
-        if book.llm_concept:
-            # ... (your existing logic to parse events is good, keep it here) ...
-            # NOTE: You will need to copy the event parsing logic from the old
-            # book_generator.py file here.
-            try:
-                concept_data = book.llm_concept
-                if isinstance(book.llm_concept, str):
-                    concept_data = json.loads(book.llm_concept)
-                
-                if "chapters" in concept_data:
-                    for chapter_data in concept_data["chapters"]:
-                        if chapter_data.get("chapter_number") == chapter.chapter_number:
-                            events = chapter_data.get("chapter_events", [])
-                            if events:
-                                event_descriptions = [f"• {event.get('event_title', '')}: {event.get('event_description', '')}" for event in events]
-                                chapter_events = "\n".join(event_descriptions)
-                            break
-            except (json.JSONDecodeError, KeyError, TypeError):
-                chapter_events = ""
-
-
-        template_name = f"create_chapter_part{part}"
-        prompt_params = {
-            "chapter": str(chapter.chapter_number),
-            "total_chapters": str(len(book.chapters)),
-            "world_params": book.world_description,
-            "story_bits": book.user_prompt,
-            "chapter_desc": chapter.synopsis,
-            "characters_to_use": characters_to_use,
-        }
+        logging.info(f"Building chapter prompt for chapter {chapter.id}, part {part}")
         
-        if part == 1:
-            prompt_params["chapter_events"] = chapter_events
-        else: # part == 2
-            prompt_params["result"] = chapter.content # Pass Part 1 content
+        try:
+            book = await self.get_book(chapter.book_id)
+            logging.info(f"Retrieved book {book.id} for chapter {chapter.id}")
 
-        prompt = get_template(template_name, **prompt_params)
+            # Get character context
+            characters_to_use = ""
+            if book.characters:
+                character_descriptions = [
+                    f"name: {char.name}, role: {'protagonist' if char.is_protagonist else 'supporting'}, summary: {char.description}"
+                    for char in book.characters
+                ]
+                characters_to_use = "\n".join(character_descriptions)
+                logging.info(f"Found {len(book.characters)} characters for chapter {chapter.id}")
 
-        if user_directives:
-            prompt += f"\n\nAdditional instructions for this part by the user: {user_directives}"
+            # Get chapter events from the stored concept
+            chapter_events = ""
+            if book.llm_concept:
+                try:
+                    concept_data = book.llm_concept
+                    if isinstance(book.llm_concept, str):
+                        concept_data = json.loads(book.llm_concept)
+                    
+                    if "chapters" in concept_data:
+                        for chapter_data in concept_data["chapters"]:
+                            if chapter_data.get("chapter_number") == chapter.chapter_number:
+                                events = chapter_data.get("chapter_events", [])
+                                if events:
+                                    event_descriptions = [f"• {event.get('event_title', '')}: {event.get('event_description', '')}" for event in events]
+                                    chapter_events = "\n".join(event_descriptions)
+                                    logging.info(f"Found {len(events)} events for chapter {chapter.id}")
+                                break
+                except (json.JSONDecodeError, KeyError, TypeError) as e:
+                    logging.warning(f"Error parsing chapter events for chapter {chapter.id}: {e}")
+                    chapter_events = ""
+
+            template_name = f"create_chapter_part{part}"
+            prompt_params = {
+                "chapter": str(chapter.chapter_number),
+                "total_chapters": str(len(book.chapters)),
+                "world_params": book.world_description,
+                "story_bits": book.user_prompt,
+                "chapter_desc": chapter.synopsis,
+                "characters_to_use": characters_to_use,
+            }
             
-        return prompt
+            if part == 1:
+                prompt_params["chapter_events"] = chapter_events
+            else: # part == 2
+                prompt_params["result"] = chapter.content # Pass Part 1 content
+
+            prompt = get_template(template_name, **prompt_params)
+
+            if user_directives:
+                prompt += f"\n\nAdditional instructions for this part by the user: {user_directives}"
+            
+            logging.info(f"Successfully built prompt for chapter {chapter.id}, part {part}")
+            return prompt
+            
+        except Exception as e:
+            logging.error(f"Error building chapter prompt for chapter {chapter.id}: {e}", exc_info=True)
+            raise

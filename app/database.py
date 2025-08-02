@@ -3,13 +3,15 @@
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app import config
+import os
 
-# The URL replacement is correct
 DATABASE_URL = config.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+# check if config.DB_LOCATION exists, if not create it
+if not os.path.exists(config.DB_LOCATION):
+    os.makedirs(config.DB_LOCATION)
 
-# Use this as the session factory
+engine = create_async_engine(DATABASE_URL, echo=True)
 async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 async def init_db():

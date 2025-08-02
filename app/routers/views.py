@@ -626,53 +626,139 @@ async def finalize_chapter_writing(chapter_id: int, full_content: str, part: int
 async def generate_chapter(
     request: Request,
     chapter_id: int,
-    background_tasks: BackgroundTasks,  # 1. Add BackgroundTasks dependency
+    background_tasks: BackgroundTasks,
     part: int = Form(...),
     user_directives: str = Form(""),
-    session: AsyncSession = Depends(get_session), # Use the normal session for setup
+    session: AsyncSession = Depends(get_session),
 ):
     """
-    Sets up the chapter, streams AI content, and schedules a background task for finalization.
+    Sets up the chapter and returns a streaming response.
     """
-    book_service = BookService(session)
+    logging.info(f"Starting chapter generation for chapter_id={chapter_id}, part={part}")
     
-    # 2. SETUP PHASE: All DB writes before streaming begins.
-    chapter = await session.get(Chapter, chapter_id)
-    if not chapter:
-        return HTMLResponse("Chapter not found", status_code=404)
+    try:
+        book_service = BookService(session)
+        
+        # Setup phase
+        chapter = await session.get(Chapter, chapter_id)
+        if not chapter:
+            return HTMLResponse("Chapter not found", status_code=404)
 
-    chapter.status = f"writing_part{part}"
-    chapter.user_directives = user_directives
-    session.add(chapter)
-    await session.commit()
-    await session.refresh(chapter)
+        chapter.status = f"writing_part{part}"
+        chapter.user_directives = user_directives
+        session.add(chapter)
+        await session.commit()
+        await session.refresh(chapter)
 
-    prompt = await book_service.build_chapter_prompt(chapter, part, user_directives)
+        prompt = await book_service.build_chapter_prompt(chapter, part, user_directives)
+        
+        # Return a simple response that triggers the SSE connection
+        return HTMLResponse(f"""
+        <div id="streaming-container" 
+             hx-ext="sse"
+             sse-connect="/book/{chapter_id}/generate-stream?part={part}&user_directives={user_directives}"
+             sse-swap="message">
+            <div class="streaming-content"></div>
+        </div>
+        """)
+        
+    except Exception as e:
+        logging.error(f"Error in generate_chapter for chapter {chapter_id}: {e}", exc_info=True)
+        raise
 
-    # 3. STREAMING PHASE: A new wrapper generator.
-    async def stream_wrapper():
-        full_content = ""
-        try:
-            # Use the AI service from the book service we already instantiated
-            async for chunk in book_service.ai_service.generate_response_stream(prompt):
-                content = chunk.get("data", "")
-                full_content += content
-                yield chunk
-            
-            # 4. SCHEDULING PHASE: Add the final DB write to the background.
-            # This runs AFTER the stream has been sent to the user.
-            background_tasks.add_task(finalize_chapter_writing, chapter_id, full_content, part)
+# Add this new GET endpoint for SSE
+@router.get("/book/{book_id}/chapter/{chapter_id}/generate-stream")
+async def generate_chapter_stream(
+    request: Request,
+    book_id: int,
+    chapter_id: int,
+    part: int = Query(...),
+    user_directives: str = Query(""),
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    SSE endpoint for streaming chapter generation.
+    """
+    logging.info(f"Starting SSE streaming for chapter_id={chapter_id}, part={part}")
+    
+    try:
+        book_service = BookService(session)
+        
+        # Get the chapter
+        chapter = await session.get(Chapter, chapter_id)
+        if not chapter:
+            logging.error(f"Chapter {chapter_id} not found")
+            return HTMLResponse("Chapter not found", status_code=404)
 
-            # Send a final event to the client to signal completion
-            yield {"event": "complete", "data": "Stream finished."}
-        except Exception as e:
-            logging.error(f"Streaming failed for chapter {chapter_id}: {e}", exc_info=True)
-            yield {"event": "error", "data": "An error occurred during streaming."}
+        # Update chapter status
+        chapter.status = f"writing_part{part}"
+        chapter.user_directives = user_directives
+        session.add(chapter)
+        await session.commit()
+        await session.refresh(chapter)
 
-    headers = {
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no",
-    }
+        # Build the prompt
+        prompt = await book_service.build_chapter_prompt(chapter, part, user_directives)
+        logging.info(f"Successfully built prompt for chapter {chapter_id}")
 
-    return EventSourceResponse(stream_wrapper(), headers=headers)
+        # Create background tasks for finalization
+        background_tasks = BackgroundTasks()
+
+        async def stream_wrapper():
+            streaming_session = None
+            try:
+                streaming_session = async_session_maker()
+                logging.info(f"Created new session for streaming chapter {chapter_id}")
+                
+                full_content = ""
+                try:
+                    logging.info(f"Starting AI streaming for chapter {chapter_id}")
+                    streaming_book_service = BookService(streaming_session)
+                    
+                    async for chunk in streaming_book_service.ai_service.generate_response_stream(prompt):
+                        content = chunk.get("data", "")
+                        full_content += content
+                        logging.info(f"Streaming chunk for chapter {chapter_id}: {content}")
+                        
+                        yield ServerSentEvent(
+                            data=content,
+                            event="message",
+                            id=str(chapter_id)
+                        )
+                    
+                    logging.info(f"AI streaming completed for chapter {chapter_id}, content length: {len(full_content)}")
+                    
+                    # Schedule background finalization
+                    background_tasks.add_task(finalize_chapter_writing, chapter_id, full_content, part)
+
+                    yield ServerSentEvent(
+                        data="Stream finished.",
+                        event="complete",
+                        id=str(chapter_id)
+                    )
+                except Exception as e:
+                    logging.error(f"Streaming failed for chapter {chapter_id}: {e}", exc_info=True)
+                    yield ServerSentEvent(
+                        data="An error occurred during streaming.",
+                        event="error",
+                        id=str(chapter_id)
+                    )
+            finally:
+                if streaming_session:
+                    await streaming_session.close()
+                    logging.info(f"Closed streaming session for chapter {chapter_id}")
+
+        headers = {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+            "Content-Type": "text/event-stream",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control",
+        }
+
+        return EventSourceResponse(stream_wrapper(), headers=headers)
+        
+    except Exception as e:
+        logging.error(f"Error in generate_chapter_stream for chapter {chapter_id}: {e}", exc_info=True)
+        raise

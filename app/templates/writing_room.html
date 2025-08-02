@@ -8,94 +8,98 @@
         <h2>{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h2>
         <p class="chapter-synopsis">{{ chapter.synopsis }}</p>
     </div>
-    
-    <!-- Main content area - displays the chapter content -->
-    <div class="chapter-content-container">
-        <div id="chapter-content" 
-             sse-swap="message"
-             hx-swap="beforeend">
-            {% if chapter.content %}
-                {{ chapter.content | safe }}
+
+    <!-- This div will be replaced by the streaming content -->
+    <div id="writing-interface">
+        
+        <!-- This is where the streamed content will appear. -->
+        <div id="chapter-content" class="chapter-content-container">
+            {% if chapter.content %}{{ chapter.content | safe | nl2br }}{% endif %}
+        </div>
+
+        <!-- This form will be hidden after submission -->
+        <div id="form-container">
+            {% if chapter.status == 'draft' %}
+                <form id="chapter-form" class="chapter-form">
+                    <input type="hidden" name="part" value="1">
+                    <div class="form-group">
+                        <label for="user_directives">{{ _('chapter_directives_prompt') }}</label>
+                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
+                                  placeholder="{{ _('chapter_directives_placeholder') }}"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ _('start_writing') }}</button>
+                </form>
+            {% elif chapter.status == 'part1_completed' %}
+                <form id="chapter-form" class="chapter-form">
+                    <input type="hidden" name="part" value="2">
+                    <div class="form-group">
+                        <label for="user_directives">{{ _('chapter_continue_prompt') }}</label>
+                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
+                                  placeholder="{{ _('chapter_continue_placeholder') }}"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{{ _('continue_writing') }}</button>
+                </form>
+            {% elif chapter.status == 'completed' %}
+            <div class="chapter-navigation">
+                {% if chapter.chapter_number > 1 %}
+                    <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number - 1 }}" class="btn btn-secondary">{{ _('previous_chapter') }}</a>
+                {% endif %}
+                
+                <a href="/book/{{ book.id }}" class="btn btn-secondary">{{ _('back_to_overview') }}</a>
+                
+                {% if chapter.chapter_number < book.chapters|length %}
+                    <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number + 1 }}" class="btn btn-secondary">{{ _('next_chapter') }}</a>
+                {% endif %}
+            </div>
             {% endif %}
+        </div>
+
+        <!-- Spinner shown during the request -->
+        <div class="writing-status htmx-indicator">
+             <div class="spinner"></div>
+             <p>{{ _("writing_in_progress") }}</p>
         </div>
     </div>
-    
-    <!-- Dynamic input form area based on chapter status -->
-    {% if chapter.status == 'draft' %}
-        <!-- Part 1 form - shown when chapter is in draft status -->
-        <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.id }}/generate" 
-              hx-target="#chapter-content" 
-              hx-ext="sse" 
-              sse-connect="/book/{{ book.id }}/chapter/{{ chapter.id }}/generate"
-              class="chapter-form">
-            <input type="hidden" name="part" value="1">
-            <div class="form-group">
-                <label for="user_directives">{{ _('chapter_directives_prompt') }}</label>
-                <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
-                          placeholder="{{ _('chapter_directives_placeholder') }}"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">{{ _('start_writing') }}</button>
-        </form>
-    {% elif chapter.status == 'writing_part1' or chapter.status == 'writing_part2' %}
-        <!-- Writing in progress indicator -->
-        <div class="writing-status">
-            <div class="spinner"></div>
-            <p>{{ _('writing_in_progress') }}</p>
-        </div>
-    {% elif chapter.status == 'part1_completed' %}
-        <!-- Part 2 form - shown when part 1 is completed -->
-        <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.id }}/generate" 
-              hx-target="#chapter-content" 
-              hx-ext="sse" 
-              sse-connect="/book/{{ book.id }}/chapter/{{ chapter.id }}/generate"
-              class="chapter-form">
-            <input type="hidden" name="part" value="2">
-            <div class="form-group">
-                <label for="user_directives">{{ _('chapter_continue_prompt') }}</label>
-                <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
-                          placeholder="{{ _('chapter_continue_placeholder') }}"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">{{ _('continue_writing') }}</button>
-        </form>
-    {% elif chapter.status == 'completed' %}
-        <!-- Navigation buttons for completed chapter -->
-        <div class="chapter-navigation">
-            {% if chapter.chapter_number > 1 %}
-                <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number - 1 }}" class="btn btn-secondary">{{ _('previous_chapter') }}</a>
-            {% endif %}
-            
-            <a href="/book/{{ book.id }}" class="btn btn-secondary">{{ _('back_to_overview') }}</a>
-            
-            {% if chapter.chapter_number < book.chapters|length %}
-                <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number + 1 }}" class="btn btn-secondary">{{ _('next_chapter') }}</a>
-            {% endif %}
-        </div>
-    {% endif %}
 </div>
 
 <script>
-    // Listen for the custom 'complete' event from the server
-    document.body.addEventListener('htmx:sseMessage', function(event) {
-        // Check for our custom completion event
-        // The event name from the server is in 'event.detail.event'
-        if (event.detail.event === 'complete') {
-            // Reload the page to show the updated UI (e.g., the Part 2 form or navigation buttons)
-            window.location.reload();
-        }
+    document.getElementById('chapter-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const part = formData.get('part');
+        const userDirectives = formData.get('user_directives');
+        
+        // Clear the content area
+        document.getElementById('chapter-content').innerHTML = '';
+        
+        // Show the spinner
+        document.querySelector('.writing-status').style.display = 'block';
+        
+        // Create SSE connection
+        const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.id }}/generate-stream?part=${part}&user_directives=${encodeURIComponent(userDirectives)}`);
+        
+        eventSource.onmessage = function(event) {
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML += event.data;
+        };
+        
+        eventSource.addEventListener('complete', function(event) {
+            eventSource.close();
+            setTimeout(() => { window.location.reload(); }, 500);
+        });
+        
+        eventSource.addEventListener('error', function(event) {
+            eventSource.close();
+            document.getElementById('chapter-content').innerHTML = '<p class="error">An error occurred during streaming.</p>';
+        });
     });
-    
-    // Handle form submission
-    document.addEventListener('htmx:beforeRequest', function(evt) {
-        if (evt.detail.elt.tagName === 'FORM' && evt.detail.elt.classList.contains('chapter-form')) {
-            // Hide the form
-            evt.detail.elt.style.display = 'none';
-            
-            // Show writing in progress indicator
-            const writingStatus = document.createElement('div');
-            writingStatus.className = 'writing-status';
-            writingStatus.innerHTML = '<div class="spinner"></div><p>{{ _("writing_in_progress") }}</p>';
-            
-            evt.detail.elt.parentNode.appendChild(writingStatus);
+
+    // Hide the form once the request begins
+    document.body.addEventListener('htmx:beforeRequest', function(event) {
+        const formContainer = document.getElementById('form-container');
+        if (formContainer) {
+            //formContainer.style.display = 'none';
         }
     });
 </script>
