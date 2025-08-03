@@ -1602,3 +1602,40 @@
     max-width: calc(900px - 40px);
   }
 }
+
+
+.label-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.form-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: color 0.2s;
+}
+
+.form-toggle-btn:hover {
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+#form-content {
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+#form-content.collapsed {
+  max-height: 0;
+}
+
+#form-content.expanded {
+  max-height: 500px; /* Adjust based on your content */
+}
