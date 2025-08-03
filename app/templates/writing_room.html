@@ -22,38 +22,30 @@
 
         <!-- This form will be hidden after submission -->
         <div id="form-container">
-            {% if chapter.status == 'draft' %}
-                <form id="chapter-form" class="chapter-form">
-                    <input type="hidden" name="part" value="1">
-                    <div class="form-group">
-                        <label for="user_directives">{{ _('chapter_directives_prompt') }}</label>
-                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
-                                  placeholder="{{ _('chapter_directives_placeholder') }}"></textarea>
+            {% if chapter.status != 'completed' %}
+            <form id="chapter-form" class="chapter-form">
+                <input type="hidden" name="part" value="{% if chapter.status == 'draft' %}1{% elif chapter.status == 'part1_completed' %}2{% endif %}">
+                <div class="form-group">
+                    <label for="user_directives">{% if chapter.status == 'draft' %}{{ _('chapter_directives_prompt') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_prompt') }}{% endif %}</label>
+                    <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
+                                    placeholder="{% if chapter.status == 'draft' %}{{ _('chapter_directives_placeholder') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_placeholder') }}{% endif %}"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div style="flex: 1;">
+                    {% set previous_chapter_id = previous_chapter_id if previous_chapter_id else none %}
+                    {% set next_chapter_id = next_chapter_id if next_chapter_id else none %}
+                    {% include "_chapter_navigation.html" with context %}
                     </div>
-                    <button type="submit" class="btn btn-primary">{{ _('start_writing') }}</button>
-                </form>
-            {% elif chapter.status == 'part1_completed' %}
-                <form id="chapter-form" class="chapter-form">
-                    <input type="hidden" name="part" value="2">
-                    <div class="form-group">
-                        <label for="user_directives">{{ _('chapter_continue_prompt') }}</label>
-                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
-                                  placeholder="{{ _('chapter_continue_placeholder') }}"></textarea>
+                    <div style="flex: 2; text-align: right;">
+                        <button type="submit" class="btn btn-primary">{{ _('start_writing') if chapter.status == 'draft' else _('continue_writing') }}</button>
                     </div>
-                    <button type="submit" class="btn btn-primary">{{ _('continue_writing') }}</button>
-                </form>
-            {% elif chapter.status == 'completed' %}
-            <div class="chapter-navigation">
-                {% if chapter.chapter_number > 1 %}
-                    <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number - 1 }}" class="btn btn-secondary">{{ _('previous_chapter') }}</a>
-                {% endif %}
-                
-                <a href="/book/{{ book.id }}" class="btn btn-secondary">{{ _('back_to_overview') }}</a>
-                
-                {% if chapter.chapter_number < book.chapters|length %}
-                    <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number + 1 }}" class="btn btn-secondary">{{ _('next_chapter') }}</a>
-                {% endif %}
-            </div>
+                </div>
+            </form>
+            {% else %}
+                {% set previous_chapter_id = previous_chapter_id if previous_chapter_id else none %}
+                {% set next_chapter_id = next_chapter_id if next_chapter_id else none %}
+                {% include "_chapter_navigation.html" with context %}
             {% endif %}
         </div>
 

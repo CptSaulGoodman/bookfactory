@@ -356,6 +356,139 @@
     background-color: var(--color-secondary-hover-bg);
   }
   
+  /* Button classes for links styled as buttons */
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    margin-right: var(--space-sm);
+    margin-bottom: var(--space-md);
+    background-color: var(--color-accent);
+    color: var(--color-button-text);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-family: "PT Serif", serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px var(--color-shadow);
+    min-height: 44px;
+    text-decoration: none;
+    text-align: center;
+    line-height: 1.2;
+  }
+  
+  .btn:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--color-shadow);
+    text-decoration: none;
+  }
+  
+  .btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px var(--color-shadow);
+  }
+  
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-button-text);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--color-accent-hover);
+  }
+  
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-leather);
+    border: 1px solid var(--color-leather);
+    box-shadow: none;
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--color-secondary-hover-bg);
+  }
+  
+  .btn-danger {
+    background-color: var(--color-error);
+    color: var(--color-button-text);
+  }
+  
+  .btn-danger:hover {
+    background-color: #933333; /* Darker error color */
+  }
+  
+  /* Disabled button states */
+  .btn:disabled,
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: 0 2px 4px var(--color-shadow) !important;
+  }
+  
+  /* Chapter Navigation Component */
+  .chapter-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+    margin: var(--space-sm) 0;
+    padding: var(--space-sm);
+  }
+
+  /* Navigation and submit button on same line */
+  .d-flex {
+    display: flex;
+  }
+
+  .justify-content-between {
+    justify-content: space-between;
+  }
+
+  .align-items-center {
+    align-items: center;
+  }
+
+  /* Override chapter navigation styles when used inline */
+  .d-flex .chapter-navigation {
+    margin: 0;
+    padding: var(--space-sm);
+    flex: 1;
+  }
+  
+
+  
+  /* Expandable content utility classes */
+  .expandable-trigger {
+    cursor: pointer;
+  }
+  
+  .expandable-content {
+    display: none;
+  }
+  
+  .expandable-content.expanded {
+    display: block;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
   form.htmx-request button {
     visibility: hidden;
   }
@@ -780,7 +913,7 @@
   }
 
   /* Main book overview title - large and prominent */
-  .book-overview-title, .chapter-title {
+  .book-overview-title {
     font-size: clamp(1.75rem, 5vw, 2.5rem);
     margin: 0 0 var(--space-sm) 0;
     color: var(--color-binding);
@@ -788,9 +921,19 @@
     word-wrap: break-word;
     font-weight: 700;
   }
+  
+  /* Chapter titles - smaller than book title */
+  .chapter .chapter-title {
+    font-size: clamp(1.1rem, 3vw, 1.3rem);
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--color-binding);
+    line-height: 1.2;
+    word-wrap: break-word;
+    font-weight: 600;
+  }
 
   /* Keep existing book-title for sidebar links */
-  .book-title, .chapter-subtitle {
+  .book-title, .chapter-title {
     margin: var(--space-md) 0;
     color: var(--color-binding);
     line-height: 1.2;
@@ -803,7 +946,7 @@
     color: var(--color-accent);
   }
 
-  .book-subtitle {
+  .book-subtitle, .chapter-subtitle {
     font-size: clamp(1.1rem, 3vw, 1.5rem);
     font-style: italic;
     margin: 0 0 var(--space-lg) 0;
@@ -913,9 +1056,6 @@
       margin: var(--space-lg) 0;
     }
     
-    .chapter-title {
-      font-size: 1.1rem;
-    }
   }
 
   /* Tablet styles */
@@ -1292,34 +1432,7 @@
   padding: 0 20px 20px 20px;
 }
 
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn-secondary {
-  background-color: var(--secondary-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background-color: var(--hover-bg);
-}
-
-.btn-danger {
-  background-color: var(--danger-color);
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: var(--danger-hover);
-}
+/* Modal button styles now use the main .btn classes defined earlier */
 
 /* Ensure modal works with theme */
 [data-theme="dark"] .modal-content {

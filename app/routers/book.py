@@ -118,7 +118,7 @@ async def get_chapter_view(
     formatted_content = parse_markdown(chapter.content) if chapter.content else ""
     
     return templates.TemplateResponse(
-        "chapter_view.html",
+        "writing_room.html",
         {
             "request": request,
             "book": book,

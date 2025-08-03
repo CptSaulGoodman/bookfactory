@@ -19,8 +19,8 @@
         <ul class="characters-grid">
             {% for character in characters %}
                 <li class="character-item">
-                        <div class="char-name" onclick="toggleDescription({{ loop.index0 }})" style="cursor: pointer;"><strong>{{ character.name }}</strong></div>
-                        <div class="char-details" id="div-details-{{ loop.index0 }}" style="display: none;"><small>{{ character.description }}</small></div>
+                        <div class="char-name expandable-trigger" onclick="toggleDescription({{ loop.index0 }})" aria-expanded="false" aria-controls="div-details-{{ loop.index0 }}" role="button" tabindex="0"><strong>{{ character.name }}</strong></div>
+                        <div class="char-details expandable-content" id="div-details-{{ loop.index0 }}"><small>{{ character.description }}</small></div>
                 </li>
             {% endfor %}
         </ul>
@@ -33,8 +33,8 @@
         
         {% for chapter in book.chapters %}
             <article class="chapter">
-                <h4 class="chapter-title" onclick="toggleDescription('chapter-' + {{ loop.index0 }})" style="cursor: pointer;">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h4>
-                <p class="chapter-synopsis" id="div-details-chapter-{{ loop.index0 }}" style="display: none;">{{ chapter.synopsis }}</p>
+                <h4 class="chapter-title expandable-trigger" onclick="toggleDescription('chapter-{{ loop.index0 }}')" aria-expanded="false" aria-controls="div-details-chapter-{{ loop.index0 }}" role="button" tabindex="0">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h4>
+                <p class="chapter-synopsis expandable-content" id="div-details-chapter-{{ loop.index0 }}">{{ chapter.synopsis }}</p>
                 
                 <div class="chapter-actions">
                     {% if chapter.status == 'completed' %}
@@ -63,11 +63,33 @@
 <script>
 function toggleDescription(index) {
     const description = document.getElementById('div-details-' + index);
-    if (description.style.display === 'none' || description.style.display === '') {
-        description.style.display = 'block';
-    } else {
-        description.style.display = 'none';
+    const trigger = document.querySelector(`[aria-controls="div-details-${index}"]`);
+    
+    if (description && trigger) {
+        const isExpanded = description.classList.contains('expanded');
+        
+        if (isExpanded) {
+            description.classList.remove('expanded');
+            trigger.setAttribute('aria-expanded', 'false');
+        } else {
+            description.classList.add('expanded');
+            trigger.setAttribute('aria-expanded', 'true');
+        }
     }
 }
+
+// Add keyboard support for expandable elements
+document.addEventListener('DOMContentLoaded', function() {
+    const expandableTriggers = document.querySelectorAll('.expandable-trigger');
+    
+    expandableTriggers.forEach(trigger => {
+        trigger.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+});
 </script>
 {% endblock %}
