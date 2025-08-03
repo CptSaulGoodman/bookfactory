@@ -103,9 +103,13 @@ class BookService:
         Deletes a book by its ID.
         """
         book = await self.get_book(book_id)
+        logging.info(f"Deleting book {book_id}")
         if book:
-            self.session.delete(book)
+            await self.session.delete(book)
             await self.session.commit()
+            logging.info(f"Deleted book {book_id}")
+        else:
+            logging.error(f"Book {book_id} not found")
 
     async def create_book_draft(self, user_prompt: str) -> Book:
         """
