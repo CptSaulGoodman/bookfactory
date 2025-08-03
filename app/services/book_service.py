@@ -295,8 +295,13 @@ class BookService:
                     logging.warning(f"Error parsing chapter events for chapter {chapter.id}: {e}")
                     chapter_events = ""
 
-            # TODO: Add RAG retrieved context
             rag_retrieved_context = ""
+            if chapter.chapter_number > 1:
+                previous_chapter_number = chapter.chapter_number - 1
+                for ch in book.chapters:
+                    if ch.chapter_number == previous_chapter_number:
+                        rag_retrieved_context = ch.previous_storyline
+                        break
 
             template_name = f"create_chapter_part{part}"
             prompt_params = {

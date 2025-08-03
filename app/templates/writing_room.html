@@ -26,9 +26,17 @@
             <form id="chapter-form" class="chapter-form">
                 <input type="hidden" name="part" id="part_input" value="{% if chapter.status == 'draft' %}1{% elif chapter.status == 'part1_completed' %}2{% endif %}">
                 <div class="form-group">
-                    <label for="user_directives">{% if chapter.status == 'draft' %}{{ _('chapter_directives_prompt') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_prompt') }}{% endif %}</label>
-                    <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
-                                    placeholder="{% if chapter.status == 'draft' %}{{ _('chapter_directives_placeholder') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_placeholder') }}{% endif %}"></textarea>
+                    <div class="label-toggle-container">
+                        <label for="user_directives">{% if chapter.status == 'draft' %}{{ _('chapter_directives_prompt') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_prompt') }}{% endif %}</label>
+                        <button type="button" id="form-toggle" class="form-toggle-btn" title="Toggle form visibility">
+                            <span class="caret-down">▼</span>
+                            <span class="caret-up" style="display: none;">▲</span>
+                        </button>
+                    </div>
+                    <div id="form-content">
+                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
+                                        placeholder="{% if chapter.status == 'draft' %}{{ _('chapter_directives_placeholder') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_placeholder') }}{% endif %}"></textarea>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-between">
@@ -59,6 +67,44 @@
     </div>
 </div>
 
+<style>
+    .label-toggle-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .form-toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        color: #666;
+        padding: 2px 6px;
+        border-radius: 3px;
+        transition: color 0.2s;
+    }
+
+    .form-toggle-btn:hover {
+        color: #333;
+        background-color: #f0f0f0;
+    }
+
+    #form-content {
+        transition: max-height 0.3s ease-in-out;
+        overflow: hidden;
+    }
+
+    #form-content.collapsed {
+        max-height: 0;
+    }
+
+    #form-content.expanded {
+        max-height: 500px; /* Adjust based on your content */
+    }
+</style>
+
 <script>
     // Simple markdown parser for paragraphs, italic, and bold
     function parseMarkdown(text) {
@@ -73,6 +119,9 @@
             
             // Convert *italic* to <em>italic</em>
             parsed = parsed.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // convert ----- to <hr class="book-section-divider">
+            parsed = parsed.replace(/-----/g, '<hr class="book-section-divider">');
             
             // Wrap in paragraph tags
             return `<p>${parsed}</p>`;
@@ -84,6 +133,29 @@
     let currentPart = null;
     let currentUserDirectives = null;
     let isAutoScrolling = true;
+    let isFormManuallyCollapsed = false;
+
+    // --- Form Toggle Logic ---
+    const formToggleBtn = document.getElementById('form-toggle');
+    const formContent = document.getElementById('form-content');
+    const caretDown = document.querySelector('.caret-down');
+    const caretUp = document.querySelector('.caret-up');
+
+    formToggleBtn.addEventListener('click', function() {
+        isFormManuallyCollapsed = !isFormManuallyCollapsed;
+        
+        if (isFormManuallyCollapsed) {
+            formContent.classList.add('collapsed');
+            formContent.classList.remove('expanded');
+            caretDown.style.display = 'none';
+            caretUp.style.display = 'inline';
+        } else {
+            formContent.classList.remove('collapsed');
+            formContent.classList.add('expanded');
+            caretDown.style.display = 'inline';
+            caretUp.style.display = 'none';
+        }
+    });
 
     // --- Autoscroll Logic ---
     // Scrolls to the bottom of the page if auto-scrolling is enabled.
@@ -124,6 +196,9 @@
         } else if (initialStatus === 'part1_completed') {
             continueWritingButton.style.display = 'inline-block';
         }
+        
+        // Initialize form content as expanded
+        formContent.classList.add('expanded');
     });
 
     // --- Button Click Handlers ---
@@ -182,6 +257,10 @@
             eventSource.close();
             isGenerating = false;
 
+            accumulatedText += '<hr class="class="book-section-divider"">';
+            contentDiv.innerHTML = parseMarkdown(accumulatedText);
+            scrollToBottom();
+            
             // --- UI Updates: End Generation ---
             formContainer.classList.remove('hidden');
             writingStatus.classList.remove('active');

@@ -34,23 +34,29 @@ Remember: This conclusion of the chapter should feel like a natural, inevitable 
 
 
 STORY CONTEXT:
-<chapter_title>{title}</chapter_title>
 <world_params>{world_params}</world_params>
 <story_bits>{story_bits}</story_bits>
-<chapter_description>{chapter_desc}</chapter_description>
 <characters_to_use>{characters_to_use}</characters_to_use>
-<chapter_events>{chapter_events}</chapter_events>
-<chapter_opening_section>{previous_part_content}</chapter_opening_section>
 
 NARRATIVE CONSISTENCY ELEMENTS:
+This is a summary of what happened in the previous chapters:
 <rag_retrieved_context>{rag_retrieved_context}</rag_retrieved_context>
+
+<chapter_title>{title}</chapter_title>
+<chapter_description>{chapter_desc}</chapter_description>
+<chapter_events>{chapter_events}</chapter_events>
+
+And this is the complete opening section of this chapter you need to continue from:
+<chapter_opening_section>{previous_part_content}</chapter_opening_section>
 
 ADDITIONAL DIRECTIVES PROVIDED BY THE USER:
 *If provided, these supercede any previously provided information.*
 <user_directives>{user_directives}</user_directives>
 
 This is part 2 of 2 of this Chapter
+Do NOT return the chapter_opening_section, ONLY the chapter conclusion.
+
 This is chapter {chapter} of a total of {total_chapters} chapters.
-Do NOT conclude the story if this is not the final chapter!
+Do NOT conclude the story as whole if this is not the final chapter!
 
 Only return the chapter text without the title.

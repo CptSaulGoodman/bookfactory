@@ -7,6 +7,7 @@ from sse_starlette.sse import EventSourceResponse, ServerSentEvent
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import config
+from app.prompts.templates import get_template
 import json
 
 from app.database import get_session, async_session_maker
@@ -188,8 +189,9 @@ async def finalize_chapter_writing(chapter_id: int, full_content: str, part: int
         session = async_session_maker()
         chapter = await session.get(Chapter, chapter_id)
         if chapter:
+            current_chapter_number = chapter.chapter_number
             if part == 1:
-                chapter.content = full_content
+                chapter.content = full_content + "\n-----\n"
                 chapter.status = "part1_completed"
             else: # part == 2
                 part1_content = chapter.content or ""
@@ -199,6 +201,41 @@ async def finalize_chapter_writing(chapter_id: int, full_content: str, part: int
             session.add(chapter)
             await session.commit()
             logging.info(f"Successfully finalized chapter id {chapter_id}, part {part}.")
+
+            # generate a summary of the storyline so far
+            if part == 2:
+                book_service = BookService(session)
+                book = await book_service.get_book(chapter.book_id)
+                previous_storyline = ""
+                next_chapter_synopsis = ""
+                for ch in book.chapters:
+                    # get previous summary for consistency
+                    if ch.chapter_number == current_chapter_number - 1 and ch.previous_storyline:
+                        previous_storyline += ch.previous_storyline
+                    elif ch.chapter_number == current_chapter_number - 1 and not ch.previous_storyline:
+                        previous_storyline += ch.content
+                    # for the current chapter, use the actual full content
+                    elif ch.chapter_number == current_chapter_number:
+                        previous_storyline += ch.content
+                    # the next chapter, if it exists, for context
+                    elif ch.chapter_number == current_chapter_number + 1:
+                        next_chapter_synopsis = ch.synopsis
+                
+                # call the LLM to create a summary of the storyline so far
+                if previous_storyline and next_chapter_synopsis:
+                    storyline_synopsis = await book_service.ai_service.generate_response(
+                        get_template("create_summary",
+                                    previous_storyline=previous_storyline,
+                                    next_chapter_synopsis=next_chapter_synopsis)
+                    )
+                    if storyline_synopsis:
+                        chapter.previous_storyline = storyline_synopsis
+                        session.add(chapter)
+                        await session.commit()
+                        logging.info(f"Successfully generated storyline synopsis for chapter id {chapter_id}.")
+                    else:
+                        logging.error(f"Failed to generate storyline synopsis for chapter id {chapter_id}.")
+
     except Exception as e:
         logging.error(f"Background finalization failed for chapter id {chapter_id}: {e}", exc_info=True)
     finally:

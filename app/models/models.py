@@ -41,6 +41,7 @@ class Chapter(SQLModel, table=True):
     status: str = Field(default="draft")
     content: Optional[str] = Field(default=None, sa_column=Column(Text))
     user_directives: Optional[str] = Field(default=None, sa_column=Column(Text))
+    previous_storyline: Optional[str] = Field(default=None, sa_column=Column(Text))
 
     book_id: Optional[int] = Field(default=None, foreign_key="book.id")
     book: Optional[Book] = Relationship(back_populates="chapters")

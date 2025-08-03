@@ -23,6 +23,9 @@ def parse_markdown(text: str) -> str:
         while '*' in parsed:
             parsed = parsed.replace('*', '</em>', 1)
         
+        # convert ----- to <hr class="book-section-divider">
+        parsed = parsed.replace('-----', '<hr class="book-section-divider">')
+        
         # Wrap in paragraph tags
         formatted_paragraphs.append(f"<p>{parsed}</p>")
     

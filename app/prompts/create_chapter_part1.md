@@ -27,15 +27,17 @@ TONE & STYLE: Engaging and accessible, with vivid descriptions that spark imagin
 Remember: This opening section should make readers immediately invested in what happens next while staying true to established story elements and character personalities.
 
 STORY CONTEXT:
-<chapter_title>{title}</chapter_title>
 <world_params>{world_params}</world_params>
 <story_bits>{story_bits}</story_bits>
-<chapter_description>{chapter_desc}</chapter_description>
 <characters_to_use>{characters_to_use}</characters_to_use>
-<chapter_events>{chapter_events}</chapter_events>
 
 NARRATIVE CONSISTENCY ELEMENTS:
+This is what happened in the previous chapters:
 <rag_retrieved_context>{rag_retrieved_context}</rag_retrieved_context>
+
+<chapter_title>{title}</chapter_title>
+<chapter_description>{chapter_desc}</chapter_description>
+<chapter_events>{chapter_events}</chapter_events>
 
 ADDITIONAL DIRECTIVES PROVIDED BY THE USER:
 *If provided, these supercede any previously provided information.*
