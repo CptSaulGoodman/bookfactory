@@ -79,66 +79,32 @@
         }).join('');
     }
 
-    // Auto-scroll functionality with buffer
-    let autoScroll = true;
-    let userScrolled = false;
-    let lastScrollPosition = 0;
-    let isProgrammaticScroll = false; // Flag to prevent auto-scroll from triggering scroll events
-    const contentDiv = document.getElementById('chapter-content');
-    const BUFFER_ZONE = 100; // pixels from bottom to consider "at bottom"
-
-    // Check if user is at the bottom with buffer zone
-    function isAtBottom() {
-        const scrollPosition = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        const distanceFromBottom = documentHeight - (scrollPosition + windowHeight);
-        
-        return distanceFromBottom <= BUFFER_ZONE;
-    }
-
-    // Auto-scroll to bottom of the page
-    function scrollToBottom() {
-        if (autoScroll) {
-            isProgrammaticScroll = true;
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,
-                behavior: 'smooth'
-            });
-            // Reset the flag after a short delay
-            setTimeout(() => {
-                isProgrammaticScroll = false;
-            }, 100);
-        }
-    }
-
-    // Handle user scroll events on the window
-    window.addEventListener('scroll', function() {
-        // Ignore programmatic scrolls
-        if (isProgrammaticScroll) return;
-
-        const currentScrollPosition = window.scrollY;
-        const scrollDistance = Math.abs(currentScrollPosition - lastScrollPosition);
-        lastScrollPosition = currentScrollPosition;
-
-        // Only consider it a user scroll if they moved more than a small threshold
-        if (scrollDistance < 3) return;
-
-        // If user scrolls away from bottom, disable auto-scroll
-        if (!isAtBottom()) {
-            autoScroll = false;
-            userScrolled = true;
-        } else {
-            // If user scrolls to bottom area, re-enable auto-scroll
-            autoScroll = true;
-            userScrolled = false;
-        }
-    });
-
     // --- State Management ---
     let isGenerating = false;
     let currentPart = null;
     let currentUserDirectives = null;
+    let isAutoScrolling = true;
+
+    // --- Autoscroll Logic ---
+    // Scrolls to the bottom of the page if auto-scrolling is enabled.
+    function scrollToBottom() {
+        if (isAutoScrolling) {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // When the user scrolls, check if they are at the bottom of the page.
+    // If they scroll up, auto-scrolling is disabled. If they scroll back down, it's re-enabled.
+    window.addEventListener('scroll', () => {
+        if (isGenerating) {
+            const buffer = 40; // A buffer helps prevent rounding errors.
+            const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - buffer;
+            isAutoScrolling = atBottom;
+        }
+    });
 
     // --- Element References ---
     const chapterForm = document.getElementById('chapter-form');
@@ -182,6 +148,7 @@
             return;
         }
         isGenerating = true;
+        isAutoScrolling = true; // Reset to true at the beginning of generation.
 
         const formData = new FormData(this);
         currentPart = formData.get('part');
@@ -194,7 +161,10 @@
         continueWritingButton.style.display = 'none';
         writingStatus.classList.add('active');
 
-        lastScrollPosition = window.scrollY;
+        window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
 
         // --- SSE Connection ---
         const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}/generate-stream?part=${currentPart}&user_directives=${encodeURIComponent(currentUserDirectives)}`);
