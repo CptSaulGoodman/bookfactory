@@ -39,7 +39,8 @@
                     </div>
                     <div style="flex: 2; text-align: right;">
                         <button type="submit" class="btn btn-secondary" id="rewrite_button" style="display: none;">{{ _('rewrite') }}</button>
-                        <button type="submit" class="btn btn-primary" id="start_writing_button">{{ _('start_writing') if chapter.status == 'draft' else _('continue_writing') }}</button>
+                        <button type="submit" class="btn btn-primary" id="continue_writing_button" style="display: none;">{{ _('continue_writing') }}</button>
+                        <button type="submit" class="btn btn-primary" id="start_writing_button" style="display: none;">{{ _('start_writing') }}</button>
                     </div>
                 </div>
             </form>
@@ -134,58 +135,122 @@
         }
     });
 
-    document.getElementById('chapter-form').addEventListener('submit', function(e) {
+    // --- State Management ---
+    let isGenerating = false;
+    let currentPart = null;
+    let currentUserDirectives = null;
+
+    // --- Element References ---
+    const chapterForm = document.getElementById('chapter-form');
+    const partInput = document.getElementById('part_input');
+    const userDirectivesInput = document.getElementById('user_directives');
+    const formContainer = document.getElementById('form-container');
+    const writingStatus = document.querySelector('.writing-status');
+    const rewriteButton = document.getElementById('rewrite_button');
+    const startWritingButton = document.getElementById('start_writing_button');
+    const continueWritingButton = document.getElementById('continue_writing_button');
+
+    // --- Initial UI State ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialStatus = "{{ chapter.status }}";
+        if (initialStatus === 'draft') {
+            startWritingButton.style.display = 'inline-block';
+        } else if (initialStatus === 'part1_completed') {
+            continueWritingButton.style.display = 'inline-block';
+        }
+    });
+
+    // --- Button Click Handlers ---
+    rewriteButton.addEventListener('click', function() {
+        // When rewriting, use the same part number as the previous generation.
+        if (currentPart) {
+            partInput.value = currentPart;
+        }
+    });
+
+    continueWritingButton.addEventListener('click', function() {
+        // When continuing, always set the part to '2'.
+        partInput.value = '2';
+    });
+
+    // --- Form Submission Logic ---
+    chapterForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
+        if (isGenerating) {
+            console.warn("Generation is already in progress.");
+            return;
+        }
+        isGenerating = true;
+
         const formData = new FormData(this);
-        const part = formData.get('part');
-        const userDirectives = formData.get('user_directives');
-        
-        // Clear the content area
-        document.getElementById('chapter-content').innerHTML = '';
-        
-        // Don't reset scroll state - maintain user's preference
-        // autoScroll = true;
-        // userScrolled = false;
+        currentPart = formData.get('part');
+        currentUserDirectives = formData.get('user_directives');
+
+        // --- UI Updates: Start Generation ---
+        formContainer.classList.add('hidden');
+        rewriteButton.style.display = 'none';
+        startWritingButton.style.display = 'none';
+        continueWritingButton.style.display = 'none';
+        writingStatus.classList.add('active');
+
         lastScrollPosition = window.scrollY;
+
+        // --- SSE Connection ---
+        const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}/generate-stream?part=${currentPart}&user_directives=${encodeURIComponent(currentUserDirectives)}`);
         
-        // Show the spinner
-        document.querySelector('.writing-status').style.display = 'block';
-        
-        // Create SSE connection
-        const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.id }}/generate-stream?part=${part}&user_directives=${encodeURIComponent(userDirectives)}`);
-        
-        let accumulatedText = '';
-        
+        let accumulatedText = document.getElementById('chapter-content').innerHTML;
+
         eventSource.onmessage = function(event) {
             const contentDiv = document.getElementById('chapter-content');
             accumulatedText += event.data;
-            
-            // Parse markdown and update content
-            const parsedHtml = parseMarkdown(accumulatedText);
-            contentDiv.innerHTML = parsedHtml;
-            
-            // Auto-scroll to bottom only if user hasn't scrolled away
+            contentDiv.innerHTML = parseMarkdown(accumulatedText);
             scrollToBottom();
         };
-        
+
         eventSource.addEventListener('complete', function(event) {
             eventSource.close();
-            //setTimeout(() => { window.location.reload(); }, 500);
+            isGenerating = false;
+
+            // --- UI Updates: End Generation ---
+            formContainer.classList.remove('hidden');
+            writingStatus.classList.remove('active');
+
+            // Conditional button visibility
+            if (currentPart === '1') {
+                // After part 1, show rewrite and continue
+                rewriteButton.style.display = 'inline-block';
+                continueWritingButton.style.display = 'inline-block';
+                startWritingButton.style.display = 'none';
+            } else if (currentPart === '2') {
+                // After part 2, only show rewrite
+                rewriteButton.style.display = 'inline-block';
+                startWritingButton.style.display = 'none';
+                continueWritingButton.style.display = 'none';
+            }
         });
-        
+
         eventSource.addEventListener('error', function(event) {
             eventSource.close();
+            isGenerating = false;
             document.getElementById('chapter-content').innerHTML = '<p class="error">An error occurred during streaming.</p>';
+            
+            // Restore UI on error
+            formContainer.classList.remove('hidden');
+            writingStatus.classList.remove('active');
+            // Restore button visibility based on the part that failed.
+            if (currentPart === '1') {
+                // If part 1 failed, revert to the initial "start" state.
+                startWritingButton.style.display = 'inline-block';
+                rewriteButton.style.display = 'none';
+                continueWritingButton.style.display = 'none';
+            } else if (currentPart === '2') {
+                // If part 2 failed, revert to the "continue" state.
+                continueWritingButton.style.display = 'inline-block';
+                rewriteButton.style.display = 'inline-block'; // Allow rewrite of failed part 2
+                startWritingButton.style.display = 'none';
+            }
         });
-    });
-
-    // Hide the form once the request begins
-    document.body.addEventListener('htmx:beforeRequest', function(event) {
-        const formContainer = document.getElementById('form-container');
-        if (formContainer) {
-            //formContainer.style.display = 'none';
-        }
     });
 </script>
 {% endblock %}

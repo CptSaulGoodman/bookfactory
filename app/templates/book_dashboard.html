@@ -39,8 +39,10 @@
                 <div class="chapter-actions">
                     {% if chapter.status == 'completed' %}
                         <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('read_chapter') }}</a>
-                    {% elif (chapter.status == 'draft' or chapter.status == 'part1_completed') and chapter.chapter_number == next_chapter_to_write_number %}
+                        {% elif (chapter.status == 'draft') and chapter.chapter_number == next_chapter_to_write_number %}
                         <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('write_this_chapter') }}</a>
+                        {% elif (chapter.status == 'part1_completed') and chapter.chapter_number == next_chapter_to_write_number %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('continue_writing_this_chapter') }}</a>
                     {% elif chapter.status == 'writing' %}
                         <div class="writing-indicator">
                             <div class="spinner"></div>

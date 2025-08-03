@@ -262,7 +262,13 @@ class BookService:
             characters_to_use = ""
             if book.characters:
                 character_descriptions = [
-                    f"name: {char.name}, role: {'protagonist' if char.is_protagonist else 'supporting'}, summary: {char.description}"
+                    f"<name>{char.name}</name>"
+                    + f"<role>{'protagonist' if char.is_protagonist else 'supporting'}</role>"
+                    + f"<summary>{char.description}</summary>"
+                    + f"<dialogue_voice>{char.dialogue_voice}</dialogue_voice>"
+                    + f"<relationships>{char.relationships}</relationships>"
+                    + f"<role_potential>{char.role_potential}</role_potential>"
+                    + f"<story_arc>{char.story_arc}</story_arc>"
                     for char in book.characters
                 ]
                 characters_to_use = "\n".join(character_descriptions)

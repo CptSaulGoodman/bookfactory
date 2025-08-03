@@ -58,7 +58,8 @@ bookshelf_button: "Zurück zum Bücherregal"
 
 # Chapter Dashboard
 read_chapter: "Kapitel lesen"
-write_this_chapter: "Dieses Kapitel schreiben"
+write_this_chapter: "Kapitel schreiben"
+continue_writing_this_chapter: "Kapitel fortsetzen"
 writing_in_progress: "Wird geschrieben..."
 generation_failed: "Erstellung fehlgeschlagen"
 retry: "Erneut versuchen"

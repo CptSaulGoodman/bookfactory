@@ -59,6 +59,7 @@ bookshelf_button: "Back to Bookshelf"
 # Chapter Dashboard
 read_chapter: "Read Chapter"
 write_this_chapter: "Write this Chapter"
+continue_writing_this_chapter: "Continue Writing this Chapter"
 writing_in_progress: "Writing in progress..."
 generation_failed: "Generation failed"
 retry: "Retry"

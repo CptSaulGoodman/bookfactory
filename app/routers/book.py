@@ -198,9 +198,9 @@ async def finalize_chapter_writing(chapter_id: int, full_content: str, part: int
             
             session.add(chapter)
             await session.commit()
-            logging.info(f"Successfully finalized chapter {chapter_id}, part {part}.")
+            logging.info(f"Successfully finalized chapter id {chapter_id}, part {part}.")
     except Exception as e:
-        logging.error(f"Background finalization failed for chapter {chapter_id}: {e}", exc_info=True)
+        logging.error(f"Background finalization failed for chapter id {chapter_id}: {e}", exc_info=True)
     finally:
         if session:
             await session.close()
@@ -250,11 +250,11 @@ async def generate_chapter(
         logging.error(f"Error in generate_chapter for chapter {chapter_id}: {e}", exc_info=True)
         raise
 
-@router.get("/book/{book_id}/chapter/{chapter_id}/generate-stream")
+@router.get("/book/{book_id}/chapter/{chapter_number}/generate-stream")
 async def generate_chapter_stream(
     request: Request,
     book_id: int,
-    chapter_id: int,
+    chapter_number: int,
     part: int = Query(...),
     user_directives: str = Query(""),
     session: AsyncSession = Depends(get_session),
@@ -262,16 +262,23 @@ async def generate_chapter_stream(
     """
     SSE endpoint for streaming chapter generation.
     """
-    logging.info(f"Starting SSE streaming for chapter_id={chapter_id}, part={part}")
+    logging.info(f"Starting SSE streaming for book_id={book_id}, chapter_number={chapter_number}, part={part}")
     
     try:
         book_service = BookService(session)
         
         # Get the chapter
-        chapter = await session.get(Chapter, chapter_id)
+        # find chapter by chapter_number
+        chapter = None
+        book = await book_service.get_book(book_id)
+        for ch in book.chapters:
+            if ch.chapter_number == chapter_number:
+                chapter = ch
+                chapter_id = ch.id
+                break
         if not chapter:
-            logging.error(f"Chapter {chapter_id} not found")
-            return HTMLResponse("Chapter not found", status_code=404)
+            logging.error(f"Chapter number {chapter_number} not found")
+            return HTMLResponse("Chapter number not found", status_code=404)
 
         # Update chapter status
         chapter.status = f"writing_part{part}"
@@ -282,23 +289,23 @@ async def generate_chapter_stream(
 
         # Build the prompt
         prompt = await book_service.build_chapter_prompt(chapter, part, user_directives)
-        logging.info(f"Successfully built prompt for chapter {chapter_id}")
+        logging.info(f"Successfully built prompt for chapter id {chapter_id} (book_id={book_id}, chapter_number={chapter_number})")
 
         async def stream_wrapper():
             streaming_session = None
             try:
                 streaming_session = async_session_maker()
-                logging.info(f"Created new session for streaming chapter {chapter_id}")
+                logging.info(f"Created new session for streaming chapter id {chapter_id} (book_id={book_id}, chapter_number={chapter_number})")
                 
                 full_content = ""
                 try:
-                    logging.info(f"Starting AI streaming for chapter {chapter_id}")
+                    logging.info(f"Starting AI streaming for chapter id {chapter_id} (book_id={book_id}, chapter_number={chapter_number})")
                     streaming_book_service = BookService(streaming_session)
                     
                     async for chunk in streaming_book_service.ai_service.generate_response_stream(prompt):
                         content = chunk.get("data", "")
                         full_content += content
-                        logging.debug(f"Streaming chunk for chapter {chapter_id}: {content}")
+                        logging.debug(f"Streaming chunk: {content}")
                         
                         yield ServerSentEvent(
                             data=content,
@@ -306,7 +313,7 @@ async def generate_chapter_stream(
                             id=str(chapter_id)
                         )
                     
-                    logging.info(f"AI streaming completed for chapter {chapter_id}, content length: {len(full_content)}")
+                    logging.info(f"AI streaming completed for chapter id {chapter_id} (book_id={book_id}, chapter_number={chapter_number}), content length: {len(full_content)}")
                     
                     # Call finalization directly since we can't use BackgroundTasks in GET
                     # We'll do this in a separate task to avoid blocking the response
@@ -319,7 +326,7 @@ async def generate_chapter_stream(
                         id=str(chapter_id)
                     )
                 except Exception as e:
-                    logging.error(f"Streaming failed for chapter {chapter_id}: {e}", exc_info=True)
+                    logging.error(f"Streaming failed for chapter id {chapter_id} (book_id={book_id}, chapter_number={chapter_number}): {e}", exc_info=True)
                     yield ServerSentEvent(
                         data="An error occurred during streaming.",
                         event="error",
