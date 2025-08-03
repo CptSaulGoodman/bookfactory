@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.database import init_db
-from app.routers import views, ai
+from app.routers import views, ai, wizard, book
 
 app = FastAPI()
 
@@ -14,3 +14,5 @@ async def on_startup():
 
 app.include_router(views.router)
 app.include_router(ai.router)
+app.include_router(wizard.router)
+app.include_router(book.router)

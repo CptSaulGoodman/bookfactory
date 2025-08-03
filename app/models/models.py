@@ -9,7 +9,7 @@ the ORM layer for database interactions.
 from datetime import datetime
 from typing import List, Optional
 
-from sqlmodel import Field, Relationship, SQLModel, Column, JSON
+from sqlmodel import Field, Relationship, SQLModel, Column, JSON, Text
 
 
 class Book(SQLModel, table=True):
@@ -31,7 +31,17 @@ class Chapter(SQLModel, table=True):
     chapter_number: int
     title: str
     synopsis: str
-    content: Optional[str] = None
+    # Status field for the interactive writing workflow:
+    # - draft: Not yet started
+    # - writing_part1: Part 1 is being generated
+    # - part1_completed: Part 1 is done, waiting for user input for Part 2
+    # - writing_part2: Part 2 is being generated
+    # - completed: Both parts are finished
+    # - failed: An error occurred during generation
+    status: str = Field(default="draft")
+    content: Optional[str] = Field(default=None, sa_column=Column(Text))
+    user_directives: Optional[str] = Field(default=None, sa_column=Column(Text))
+    previous_storyline: Optional[str] = Field(default=None, sa_column=Column(Text))
 
     book_id: Optional[int] = Field(default=None, foreign_key="book.id")
     book: Optional[Book] = Relationship(back_populates="chapters")

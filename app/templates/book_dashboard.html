@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="book-overview">
+    <header class="book-header">
+        <h1 class="book-overview-title">{{ book.title }}</h1>
+        <h2 class="book-subtitle">{{ subtitle }}</h2>
+        <div class="book-synopsis">
+            <em>{{ synopsis }}</em>
+        </div>
+    </header>
+
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section">
+        <h3 class="book-section-title">{{ _('characters') }}</h3>
+        <ul class="characters-grid">
+            {% for character in characters %}
+                <li class="character-item">
+                        <div class="char-name expandable-trigger" onclick="toggleDescription({{ loop.index0 }})" aria-expanded="false" aria-controls="div-details-{{ loop.index0 }}" role="button" tabindex="0"><strong>{{ character.name }}</strong></div>
+                        <div class="char-details expandable-content" id="div-details-{{ loop.index0 }}"><small>{{ character.description }}</small></div>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <hr class="book-section-divider" aria-hidden="true">
+
+    <section class="book-section chapters-container">
+        <h3 class="book-section-title">{{ _('chapters') }}</h3>
+        
+        {% for chapter in book.chapters %}
+            <article class="chapter">
+                <h4 class="chapter-title expandable-trigger" onclick="toggleDescription('chapter-{{ loop.index0 }}')" aria-expanded="false" aria-controls="div-details-chapter-{{ loop.index0 }}" role="button" tabindex="0">{{ _('chapter') }} {{ chapter.chapter_number }}: {{ chapter.title }}</h4>
+                <p class="chapter-synopsis expandable-content" id="div-details-chapter-{{ loop.index0 }}">{{ chapter.synopsis }}</p>
+                
+                <div class="chapter-actions">
+                    {% if chapter.status == 'completed' %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('read_chapter') }}</a>
+                        {% elif (chapter.status == 'draft') and chapter.chapter_number == next_chapter_to_write_number %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('write_this_chapter') }}</a>
+                        {% elif (chapter.status == 'part1_completed') and chapter.chapter_number == next_chapter_to_write_number %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('continue_writing_this_chapter') }}</a>
+                    {% elif chapter.status == 'writing' %}
+                        <div class="writing-indicator">
+                            <div class="spinner"></div>
+                            <span>{{ _('writing_in_progress') }}</span>
+                        </div>
+                    {% elif chapter.status == 'failed' %}
+                        <div class="error-message">
+                            <span>{{ _('generation_failed') }}</span>
+                            <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" hx-target=".chapters-container">
+                                <button type="submit" class="btn btn-secondary">{{ _('retry') }}</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </section>
+</div>
+
+<script>
+function toggleDescription(index) {
+    const description = document.getElementById('div-details-' + index);
+    const trigger = document.querySelector(`[aria-controls="div-details-${index}"]`);
+    
+    if (description && trigger) {
+        const isExpanded = description.classList.contains('expanded');
+        
+        if (isExpanded) {
+            description.classList.remove('expanded');
+            trigger.setAttribute('aria-expanded', 'false');
+        } else {
+            description.classList.add('expanded');
+            trigger.setAttribute('aria-expanded', 'true');
+        }
+    }
+}
+
+// Add keyboard support for expandable elements
+document.addEventListener('DOMContentLoaded', function() {
+    const expandableTriggers = document.querySelectorAll('.expandable-trigger');
+    
+    expandableTriggers.forEach(trigger => {
+        trigger.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

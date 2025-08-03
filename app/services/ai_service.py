@@ -1,6 +1,7 @@
 """AI/LLM integration service."""
 
-from typing import Optional, Type, TypeVar
+import json
+from typing import Optional, Type, TypeVar, AsyncGenerator
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel
@@ -17,9 +18,10 @@ class AIService:
     def __init__(self):
         self.model = ChatOpenAI(
             model=config.LLM_MODEL,
-            temperature=0,
+            temperature=1,
             api_key=config.OPENAI_API_KEY,
             base_url=config.OPENAI_API_BASE,
+            streaming=True,
         )
 
     async def generate_response(self, prompt_text: str, model: Optional[Type[T]] = None) -> T | str:
@@ -33,6 +35,14 @@ class AIService:
         else:
             result = await self.model.ainvoke(prompt_text)
             return result.content
+
+    async def generate_response_stream(self, prompt_text: str) -> AsyncGenerator[dict, None]:
+        """
+        Generate a response using the AI model, yielding content chunks.
+        """
+        async for chunk in self.model.astream(prompt_text):
+            if hasattr(chunk, "content") and chunk.content:
+                yield {"data": chunk.content}
 
     async def generate_comment(self, user_story_idea: str,
             user_book_title: str = "Not defined yet",
