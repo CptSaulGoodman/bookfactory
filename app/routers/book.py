@@ -46,7 +46,7 @@ async def get_book_dashboard(
     # Calculate the next chapter to write (lowest chapter number with status 'draft')
     next_chapter_to_write_number = None
     if book.chapters:
-        draft_chapters = [ch for ch in book.chapters if ch.status == 'draft']
+        draft_chapters = [ch for ch in book.chapters if ch.status == 'draft' or ch.status == 'part1_completed']
         if draft_chapters:
             next_chapter_to_write_number = min(ch.chapter_number for ch in draft_chapters)
 
@@ -67,7 +67,7 @@ async def get_book_dashboard(
 
 
 # Placeholder routes for Phase 2 - Chapter Generation and Streaming
-@router.get("/book/{book_id}/chapter/{chapter_id}", response_class=HTMLResponse)
+@router.get("/xbook/{book_id}/chapter/{chapter_id}", response_class=HTMLResponse)
 async def get_chapter_view(
     request: Request,
     book_id: int,
@@ -132,11 +132,11 @@ async def get_chapter_view(
     )
 
 
-@router.get("/book/{book_id}/chapter/{chapter_id}/write", response_class=HTMLResponse)
+@router.get("/book/{book_id}/chapter/{chapter_number}", response_class=HTMLResponse)
 async def get_chapter_writing_ui(
     request: Request,
     book_id: int,
-    chapter_id: int,
+    chapter_number: int,
     session: AsyncSession = Depends(get_session),
     lang: str = Depends(get_language),
 ):
@@ -153,12 +153,12 @@ async def get_chapter_writing_ui(
         
         # Find the specific chapter
         for ch in book.chapters:
-            if ch.id == chapter_id:
+            if ch.chapter_number == chapter_number:
                 chapter = ch
                 break
         
         if not chapter:
-            raise ValueError(f"Chapter with ID {chapter_id} not found.")
+            raise ValueError(f"Chapter with number {chapter_number} not found.")
         
         # Parse markdown for existing content
         formatted_content = parse_markdown(chapter.content) if chapter.content else ""

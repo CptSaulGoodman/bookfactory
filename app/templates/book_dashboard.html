@@ -38,9 +38,9 @@
                 
                 <div class="chapter-actions">
                     {% if chapter.status == 'completed' %}
-                        <a href="/book/{{ book.id }}/chapter/{{ chapter.id }}" class="btn btn-primary">{{ _('read_chapter') }}</a>
-                    {% elif chapter.status == 'draft' and chapter.chapter_number == next_chapter_to_write_number %}
-                        <a href="/book/{{ book.id }}/chapter/{{ chapter.id }}/write" class="btn btn-primary">{{ _('write_this_chapter') }}</a>
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('read_chapter') }}</a>
+                    {% elif (chapter.status == 'draft' or chapter.status == 'part1_completed') and chapter.chapter_number == next_chapter_to_write_number %}
+                        <a href="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" class="btn btn-primary">{{ _('write_this_chapter') }}</a>
                     {% elif chapter.status == 'writing' %}
                         <div class="writing-indicator">
                             <div class="spinner"></div>
@@ -49,7 +49,7 @@
                     {% elif chapter.status == 'failed' %}
                         <div class="error-message">
                             <span>{{ _('generation_failed') }}</span>
-                            <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.id }}/write" hx-target=".chapters-container">
+                            <form hx-post="/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}" hx-target=".chapters-container">
                                 <button type="submit" class="btn btn-secondary">{{ _('retry') }}</button>
                             </form>
                         </div>

@@ -24,7 +24,7 @@
         <div id="form-container">
             {% if chapter.status != 'completed' %}
             <form id="chapter-form" class="chapter-form">
-                <input type="hidden" name="part" value="{% if chapter.status == 'draft' %}1{% elif chapter.status == 'part1_completed' %}2{% endif %}">
+                <input type="hidden" name="part" id="part_input" value="{% if chapter.status == 'draft' %}1{% elif chapter.status == 'part1_completed' %}2{% endif %}">
                 <div class="form-group">
                     <label for="user_directives">{% if chapter.status == 'draft' %}{{ _('chapter_directives_prompt') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_prompt') }}{% endif %}</label>
                     <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
@@ -38,7 +38,8 @@
                     {% include "_chapter_navigation.html" with context %}
                     </div>
                     <div style="flex: 2; text-align: right;">
-                        <button type="submit" class="btn btn-primary">{{ _('start_writing') if chapter.status == 'draft' else _('continue_writing') }}</button>
+                        <button type="submit" class="btn btn-secondary" id="rewrite_button" style="display: none;">{{ _('rewrite') }}</button>
+                        <button type="submit" class="btn btn-primary" id="start_writing_button">{{ _('start_writing') if chapter.status == 'draft' else _('continue_writing') }}</button>
                     </div>
                 </div>
             </form>

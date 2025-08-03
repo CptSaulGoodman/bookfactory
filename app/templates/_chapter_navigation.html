@@ -1,6 +1,9 @@
+{% set current_chapter_number = chapter.chapter_number %}
+{% set total_chapters = book.chapters|length %}
+
 <nav class="chapter-navigation" aria-label="Chapter navigation">
-    {% if previous_chapter_id %}
-        <a href="/book/{{ book.id }}/chapter/{{ previous_chapter_id }}" class="btn btn-secondary" aria-label="{{ _('previous_chapter') }}" title="{{ _('previous_chapter') }}">
+    {% if current_chapter_number > 1 %}
+        <a href="/book/{{ book.id }}/chapter/{{ current_chapter_number - 1 }}" class="btn btn-secondary" aria-label="{{ _('previous_chapter') }}" title="{{ _('previous_chapter') }}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m11 17-5-5 5-5"/>
                 <path d="m18 17-5-5 5-5"/>
@@ -22,8 +25,8 @@
         </svg>
     </a>
     
-    {% if next_chapter_id %}
-        <a href="/book/{{ book.id }}/chapter/{{ next_chapter_id }}" class="btn btn-secondary" aria-label="{{ _('next_chapter') }}" title="{{ _('next_chapter') }}">
+    {% if current_chapter_number < total_chapters %}
+        <a href="/book/{{ book.id }}/chapter/{{ current_chapter_number + 1 }}" class="btn btn-secondary" aria-label="{{ _('next_chapter') }}" title="{{ _('next_chapter') }}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m6 17 5-5-5-5"/>
                 <path d="m13 17 5-5-5-5"/>
