@@ -18,6 +18,8 @@
             {% if formatted_content %}{{ formatted_content | safe }}{% endif %}
         </div>
 
+
+
         <!-- This form will be hidden after submission -->
         <div id="form-container">
             {% if chapter.status == 'draft' %}
@@ -83,38 +85,59 @@
         }).join('');
     }
 
-    // Auto-scroll functionality
+    // Auto-scroll functionality with buffer
     let autoScroll = true;
     let userScrolled = false;
+    let lastScrollPosition = 0;
+    let isProgrammaticScroll = false; // Flag to prevent auto-scroll from triggering scroll events
     const contentDiv = document.getElementById('chapter-content');
-    const container = document.getElementById('writing-interface');
+    const BUFFER_ZONE = 100; // pixels from bottom to consider "at bottom"
 
-    // Check if user is at the bottom
+    // Check if user is at the bottom with buffer zone
     function isAtBottom() {
-        return container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const distanceFromBottom = documentHeight - (scrollPosition + windowHeight);
+        
+        return distanceFromBottom <= BUFFER_ZONE;
     }
 
-    // Auto-scroll to bottom
+    // Auto-scroll to bottom of the page
     function scrollToBottom() {
         if (autoScroll) {
-            container.scrollTop = container.scrollHeight;
+            isProgrammaticScroll = true;
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
+            // Reset the flag after a short delay
+            setTimeout(() => {
+                isProgrammaticScroll = false;
+            }, 100);
         }
     }
 
-    // Handle user scroll events
-    container.addEventListener('scroll', function() {
-        if (userScrolled) {
-            // If user scrolls to bottom, re-enable auto-scroll
-            if (isAtBottom()) {
-                autoScroll = true;
-                userScrolled = false;
-            }
+    // Handle user scroll events on the window
+    window.addEventListener('scroll', function() {
+        // Ignore programmatic scrolls
+        if (isProgrammaticScroll) return;
+
+        const currentScrollPosition = window.scrollY;
+        const scrollDistance = Math.abs(currentScrollPosition - lastScrollPosition);
+        lastScrollPosition = currentScrollPosition;
+
+        // Only consider it a user scroll if they moved more than a small threshold
+        if (scrollDistance < 3) return;
+
+        // If user scrolls away from bottom, disable auto-scroll
+        if (!isAtBottom()) {
+            autoScroll = false;
+            userScrolled = true;
         } else {
-            // If user scrolls up, disable auto-scroll
-            if (!isAtBottom()) {
-                autoScroll = false;
-                userScrolled = true;
-            }
+            // If user scrolls to bottom area, re-enable auto-scroll
+            autoScroll = true;
+            userScrolled = false;
         }
     });
 
@@ -128,9 +151,10 @@
         // Clear the content area
         document.getElementById('chapter-content').innerHTML = '';
         
-        // Reset scroll state
-        autoScroll = true;
-        userScrolled = false;
+        // Don't reset scroll state - maintain user's preference
+        // autoScroll = true;
+        // userScrolled = false;
+        lastScrollPosition = window.scrollY;
         
         // Show the spinner
         document.querySelector('.writing-status').style.display = 'block';
@@ -148,7 +172,7 @@
             const parsedHtml = parseMarkdown(accumulatedText);
             contentDiv.innerHTML = parsedHtml;
             
-            // Auto-scroll to bottom
+            // Auto-scroll to bottom only if user hasn't scrolled away
             scrollToBottom();
         };
         

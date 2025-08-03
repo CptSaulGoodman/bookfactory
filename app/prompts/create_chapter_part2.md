@@ -30,7 +30,7 @@ TECHNICAL REQUIREMENTS:
 
 CONSISTENCY CHECK: Before writing, briefly review Part 1 to ensure character voices, established details, and narrative tone remain perfectly consistent.
 
-Remember: This conclusion should feel like a natural, inevitable continuation of Part 1 while delivering a complete and satisfying chapter experience that leaves readers eager for more.
+Remember: This conclusion of the chapter should feel like a natural, inevitable continuation of Part 1 while delivering a complete and satisfying chapter experience that leaves readers eager for more.
 
 
 STORY CONTEXT:
@@ -49,5 +49,8 @@ ADDITIONAL DIRECTIVES PROVIDED BY THE USER:
 *If provided, these supercede any previously provided information.*
 <user_directives>{user_directives}</user_directives>
 
-This is part 2 of 2 of Chapter {chapter} of {total_chapters} chapters total.
+This is part 2 of 2 of this Chapter
+This is chapter {chapter} of a total of {total_chapters} chapters.
+Do NOT conclude the story if this is not the final chapter!
+
 Only return the chapter text without the title.

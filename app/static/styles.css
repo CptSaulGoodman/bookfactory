@@ -1341,3 +1341,140 @@
   background-color: var(--color-error);
   color: var(--color-ink);
 }
+
+/* Writing Room UI Improvements */
+.chapter-writing-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+  min-height: 100vh;
+  padding-bottom: 350px; /* Space for fixed form */
+}
+
+.chapter-header {
+  margin: var(--space-lg) 0;
+}
+
+#writing-interface {
+  /* Remove flex layout to allow natural document flow */
+}
+
+.chapter-content-container {
+  /* Remove flex properties to allow natural flow */
+  padding-bottom: var(--space-lg);
+}
+
+#form-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 900px;
+  padding: var(--space-md);
+  background-color: var(--color-paper);
+  border-top: 1px solid var(--color-parchment);
+  box-shadow: 0 -4px 10px var(--color-shadow);
+  z-index: 5;
+}
+
+.chapter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: var(--space-sm);
+}
+
+#user_directives {
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--color-parchment);
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-md);
+  background-color: var(--color-input-bg);
+  color: var(--color-ink);
+  font-family: "PT Serif", serif;
+  font-size: 1rem;
+  min-height: 80px;
+  transition: border-color 0.3s ease;
+}
+
+#user_directives:focus {
+  outline: none;
+  border-color: var(--color-leather);
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+
+.chapter-form button[type="submit"] {
+  align-self: flex-end;
+  margin-top: var(--space-sm);
+}
+
+.writing-status {
+  position: fixed;
+  bottom: 50%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  background-color: var(--color-parchment);
+  padding: var(--space-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 20px var(--color-shadow);
+  z-index: 10;
+}
+
+.writing-status .spinner {
+  position: relative;
+  transform: none;
+  top: auto;
+  left: auto;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .chapter-writing-container {
+    padding: 0 var(--space-sm);
+    padding-bottom: 250px; /* Slightly smaller on mobile */
+  }
+
+  .chapter-header {
+    margin: var(--space-md) 0;
+  }
+
+  #form-container {
+    padding: var(--space-sm);
+  }
+
+  #user_directives {
+    min-height: 60px;
+  }
+}
+
+/* Adjust for sidebar */
+@media (min-width: 768px) {
+  body:not(.body-collapsed) .chapter-writing-container {
+    margin-left: 0;
+    margin-right: auto;
+    max-width: calc(900px - 280px);
+  }
+
+  body:not(.body-collapsed) #form-container {
+    left: calc(50% + 140px);
+    max-width: calc(900px - 280px);
+  }
+
+  body.body-collapsed .chapter-writing-container {
+    margin: 0 auto;
+    max-width: 900px;
+  }
+
+  body.body-collapsed #form-container {
+    left: calc(50% + 20px);
+    max-width: calc(900px - 40px);
+  }
+}
