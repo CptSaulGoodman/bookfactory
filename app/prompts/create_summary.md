@@ -62,7 +62,9 @@ CONCISENESS GUIDELINES:
 
 CHAPTERS TO ANALYZE: 
 <previous_storyline>{previous_storyline}</previous_storyline>
+
 UPCOMING CHAPTER FOCUS: 
+*Use this for understanding context ONLY, this did NOT happen yet so it cannot be part of the summary. It can allow you to identify critical details you need to factor in for the summary.*
 <next_chapter_synopsis>{next_chapter_synopsis}</next_chapter_synopsis>
 
 CONTEXT OPTIMIZATION:

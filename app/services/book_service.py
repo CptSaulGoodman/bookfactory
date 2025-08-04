@@ -300,11 +300,15 @@ class BookService:
                     chapter_events = ""
 
             rag_retrieved_context = ""
+            previous_chapter_ending = ""
+
             if chapter.chapter_number > 1:
                 previous_chapter_number = chapter.chapter_number - 1
                 for ch in book.chapters:
                     if ch.chapter_number == previous_chapter_number:
                         rag_retrieved_context = ch.previous_storyline
+                        previous_chapter_content = ch.content
+                        previous_chapter_ending = previous_chapter_content.split("-----")[1].strip()
                         break
 
             template_name = f"create_chapter_part{part}"
@@ -325,6 +329,8 @@ class BookService:
             
             if part == 2:
                 prompt_params["previous_part_content"] = chapter.content # Pass Part 1 content
+            else:
+                prompt_params["previous_chapter_ending"] = previous_chapter_ending
 
             prompt = get_template(template_name, **prompt_params)
             

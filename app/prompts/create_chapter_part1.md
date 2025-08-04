@@ -2,6 +2,26 @@ You are a celebrated children's and young adult author known for crafting immers
 
 WRITING MISSION: Create the **opening section** (part 1 of 2) of Chapter {chapter} of {total_chapters} that hooks readers immediately and establishes strong narrative momentum.
 
+STORY CONTEXT:
+<world_params>{world_params}</world_params>
+<story_bits>{story_bits}</story_bits>
+<characters_to_use>{characters_to_use}</characters_to_use>
+
+NARRATIVE CONSISTENCY ELEMENTS:
+This is what happened in the previous chapters:
+<rag_retrieved_context>{rag_retrieved_context}</rag_retrieved_context>
+
+This is what happened at the end of the previous chapter:
+<previous_chapter_ending>{previous_chapter_ending}</previous_chapter_ending>
+
+<chapter_title>{title}</chapter_title>
+<chapter_description>{chapter_desc}</chapter_description>
+<chapter_events>{chapter_events}</chapter_events>
+
+ADDITIONAL DIRECTIVES PROVIDED BY THE USER:
+*If provided, these supercede any previously provided information.*
+<user_directives>{user_directives}</user_directives>
+
 PART 1 OBJECTIVES:
 1. **Strong Opening Hook**: Begin with action, dialogue, or an intriguing situation that immediately engages readers
 2. **Character Voice**: Establish clear, distinct voices that match previously established personalities
@@ -25,23 +45,6 @@ TECHNICAL REQUIREMENTS:
 TONE & STYLE: Engaging and accessible, with vivid descriptions that spark imagination. Match the energy level appropriate for this chapter's role in the overall story arc.
 
 Remember: This opening section should make readers immediately invested in what happens next while staying true to established story elements and character personalities.
-
-STORY CONTEXT:
-<world_params>{world_params}</world_params>
-<story_bits>{story_bits}</story_bits>
-<characters_to_use>{characters_to_use}</characters_to_use>
-
-NARRATIVE CONSISTENCY ELEMENTS:
-This is what happened in the previous chapters:
-<rag_retrieved_context>{rag_retrieved_context}</rag_retrieved_context>
-
-<chapter_title>{title}</chapter_title>
-<chapter_description>{chapter_desc}</chapter_description>
-<chapter_events>{chapter_events}</chapter_events>
-
-ADDITIONAL DIRECTIVES PROVIDED BY THE USER:
-*If provided, these supercede any previously provided information.*
-<user_directives>{user_directives}</user_directives>
 
 This is part 1 of 2 of Chapter {chapter} of {total_chapters} chapters total.
 Only return the chapter text without the title.
