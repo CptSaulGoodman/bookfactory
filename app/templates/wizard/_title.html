@@ -1,0 +1,23 @@
+<div id="wizard-content" hx-swap-oob="true">
+
+    <div class="timeline-item-completed">
+        <h3>{{ _('wizard_timeline_story_idea') }}</h3>
+        <p>"{{ book.user_prompt }}"</p>
+        {% if ai_comment %}
+            {% include "wizard/_comment.html" %}
+        {% endif %}
+    </div>
+
+    <div class="timeline-item-active">
+        <h3>{{ _('wizard_timeline_title') }}</h3>
+        <form
+            hx-put="/book/{{ book.id }}"
+            hx-target="#wizard-content"
+            hx-swap="innerHTML">
+            <label for="title">{{ _('title_prompt_label') }}</label>                        
+            <input class="input" type="text" id="title" name="title" value="{{ book.title if book.title else '' }}" required>
+            <button type="button" hx-get="/book/new" hx-target="body" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
+            <button type="submit">{{ _('wizard_next_button') }}</button>
+        </form>
+    </div>
+</div>

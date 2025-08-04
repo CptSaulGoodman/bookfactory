@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ _('app_title') }}</h1>
+    <section id="wizard-content">
+        <h2>{{ _('wizard_title') }}</h2>
+        <form
+            hx-post="/book"
+            hx-target="#wizard-content"
+            hx-swap="innerHTML"
+            hx-indicator=".spinner">
+            <label for="user_prompt">{{ _('story_prompt_label') }}</label>
+            <textarea
+                id="user_prompt"
+                name="user_prompt"
+                rows="4"
+                required
+                placeholder="{{ _('story_prompt_placeholder') }}">{% if book %}{{ book.user_prompt }}{% endif %}</textarea>
+            {% if book %}
+                <input type="hidden" name="book_id" value="{{ book.id }}">
+            {% endif %}
+            <button type="submit">{{ _('continue_button') if book else _('start_button') }}</button>
+        </form>
+    </section>
+{% endblock %}

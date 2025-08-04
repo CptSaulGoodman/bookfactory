@@ -1,10 +1,12 @@
 """Vector database operations for character storage and retrieval."""
+import os
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from app import config
-from app.models.character import CharacterCollection
+from app.models.data_models import CharacterCollection
 
 
 class VectorStoreService:

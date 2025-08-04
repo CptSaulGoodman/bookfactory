@@ -3,8 +3,9 @@
 import os
 from pathlib import Path
 from typing import Dict, Any
-
+from fastapi import Request
 from app import config
+from app.utils.language import get_current_language
 
 
 class TemplateLoader:
@@ -107,7 +108,7 @@ def get_template(template_name: str, **kwargs) -> str:
     """
     try:
         body = _loader.get_template(template_name, **kwargs)
-        footer = _loader.get_template("language_footer", language=config.LANGUAGE)
+        footer = _loader.get_template("language_footer", language=get_current_language())
         return f"{body}\n{footer}"
     except FileNotFoundError as e:
         import logging

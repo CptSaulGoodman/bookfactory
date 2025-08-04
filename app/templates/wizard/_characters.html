@@ -1,0 +1,52 @@
+<div id="wizard-content" hx-swap-oob="true">
+
+    <div class="timeline-item-active">
+
+        <form id="characters-form" hx-put="/book/{{ book.id }}/characters" hx-target="#wizard-content" hx-indicator=".spinner">
+
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_story_idea') }}</h3>
+                <p>"{{ book.user_prompt }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_title') }}</h3>
+                <p>"{{ book.title }}"</p>
+            </div>
+            <div class="timeline-item-completed">
+                <h3>{{ _('wizard_timeline_world_setting') }}</h3>
+                <p>"{{ book.world_description }}"</p>
+                {% if ai_comment %}
+                    {% include "wizard/_comment.html" %}
+                {% endif %}
+            </div>
+        
+            <h3>{{ _('characters_title') }}</h3>
+            <p>{{ _('characters_description') }}</p>
+                
+            <div id="character-forms-container">
+                {% if book.characters %}
+                    {% for character in book.characters %}
+                        {% set character_index = loop.index0 %}
+                        {% include "wizard/_character_form.html" with context %}
+                    {% endfor %}
+                {% else %}
+                    {% include "wizard/_character_form.html" with context %}
+                {% endif %}
+                
+            </div>
+            
+            <button type="button"
+                    hx-get="/book/{{ book.id }}/characters/add"
+                    hx-vals="js:{character_index: document.querySelectorAll('.character-form').length}"
+                    hx-target="#character-forms-container"
+                    hx-swap="beforeend"
+                    class="secondary">
+                {{ _('characters_add_button') }}
+            </button>
+            
+            <button type="button" hx-get="/book/{{ book.id }}/world" hx-target="#wizard-content" hx-swap="innerHTML" hx-indicator=".spinner" class="button secondary">{{ _('wizard_back_button') }}</button>
+            <button type="submit">{{ _('wizard_next_button') }}</button>
+
+        </form>
+    </div>
+</div>

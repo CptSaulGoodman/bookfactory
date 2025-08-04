@@ -1,0 +1,116 @@
+<style>
+    .backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9998;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 9999;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .fading-text {
+        position: absolute;
+        opacity: 0;
+        font-size: 2rem;
+        color: #fff;
+        animation: fadeInOut 10s ease-in-out infinite;
+        z-index: 9997;
+    }
+
+    .fading-text:nth-child(1) {
+        animation-delay: 0s;
+    }
+
+    .fading-text:nth-child(2) {
+        animation-delay: 2s;
+    }
+
+    .fading-text:nth-child(3) {
+        animation-delay: 4s;
+    }
+
+    .fading-text:nth-child(4) {
+        animation-delay: 6s;
+    }
+
+    .fading-text:nth-child(5) {
+        animation-delay: 8s;
+    }
+
+
+    @keyframes fadeInOut {
+
+        0%,
+        100% {
+            opacity: 0;
+        }
+
+        50% {
+            opacity: 0.2;
+        }
+    }
+</style>
+
+<div class="backdrop">
+    <div class="spinner"></div>
+    <div id="fading-text-container">
+        <div class="fading-text">{{ book.idea }}</div>
+        <div class="fading-text">{{ book.title }}</div>
+        <div class="fading-text">{{ book.world_description }}</div>
+        {% for character in characters %}
+        <div class="fading-text">{{ character.name }}</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div hx-post="/book/{{ book.id }}/generate" hx-trigger="load" hx-swap="none"></div>
+
+<script>
+    document.addEventListener('htmx:afterRequest', function (evt) {
+        if (evt.detail.xhr.responseURL.includes('/generate')) {
+            if (evt.detail.successful) {
+                window.location.href = "/book/{{ book.id }}";
+            } else {
+                // Handle error, maybe show a message
+                console.error("Generation failed");
+            }
+        }
+    });
+
+    const container = document.getElementById('fading-text-container');
+    const texts = container.children;
+    const containerWidth = window.innerWidth;
+    const containerHeight = window.innerHeight;
+
+    for (let i = 0; i < texts.length; i++) {
+        const x = Math.random() * (containerWidth - 200); // subtract text width
+        const y = Math.random() * (containerHeight - 50); // subtract text height
+        texts[i].style.left = x + 'px';
+        texts[i].style.top = y + 'px';
+    }
+
+</script>

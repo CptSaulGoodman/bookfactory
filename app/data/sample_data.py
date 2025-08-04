@@ -1,7 +1,6 @@
 """Sample data for testing and development."""
 
-from app.models.book import Book, Chapter, Event
-from app.models.character import Character, CharacterCollection
+from app.models.data_models import Book, Chapter, Event, Character, CharacterCollection
 
 
 def get_sample_book() -> Book:

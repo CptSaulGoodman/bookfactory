@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="{{ lang | default('en') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ _('app_title') }}{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body id="body">
+    <button class="sidebar-toggle" 
+            id="sidebar-toggle" 
+            aria-label="Toggle sidebar" 
+            aria-expanded="true"
+            aria-controls="sidebar">
+        <svg class="sidebar-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path class="menu-icon" d="M3 12h18M3 6h18M3 18h18"/>
+            <path class="close-icon" d="M18 6L6 18M6 6l12 12" style="display: none;"/>
+        </svg>
+    </button>
+    <div class="container">
+        <aside class="sidebar" id="sidebar" aria-label="Navigation">
+            <div class="sidebar-content" hx-get="/bookshelf" hx-trigger="load" hx-target="this">
+                <!-- Bookshelf content will be loaded here -->
+            </div>
+        </aside>
+        <main class="content" id="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <div class="htmx-indicator spinner"></div>
+
+    <script>
+        (function() {
+
+            // Sidebar toggle functionality
+            const body = document.getElementById('body');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const mainContent = document.getElementById('main-content');
+            const menuIcon = sidebarToggle.querySelector('.menu-icon');
+            const closeIcon = sidebarToggle.querySelector('.close-icon');
+
+            // Get saved sidebar state from localStorage or default to expanded
+            const savedSidebarState = localStorage.getItem('sidebarCollapsed') === 'true';
+            
+            // Apply initial state
+            if (savedSidebarState) {
+                sidebar.classList.add('sidebar-collapsed');
+                body.classList.add('body-collapsed');
+                mainContent.classList.add('content-expanded');
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+                menuIcon.style.display = 'block';
+                closeIcon.style.display = 'none';
+            }
+
+            sidebarToggle.addEventListener('click', () => {
+                const isCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                
+                if (isCollapsed) {
+                    // Expand sidebar
+                    sidebar.classList.remove('sidebar-collapsed');
+                    body.classList.remove('body-collapsed');
+                    mainContent.classList.remove('content-expanded');
+                    sidebarToggle.setAttribute('aria-expanded', 'true');
+                    menuIcon.style.display = 'none';
+                    closeIcon.style.display = 'block';
+                    localStorage.setItem('sidebarCollapsed', 'false');
+                } else {
+                    // Collapse sidebar
+                    sidebar.classList.add('sidebar-collapsed');
+                    body.classList.add('body-collapsed');
+                    mainContent.classList.add('content-expanded');
+                    sidebarToggle.setAttribute('aria-expanded', 'false');
+                    menuIcon.style.display = 'block';
+                    closeIcon.style.display = 'none';
+                    localStorage.setItem('sidebarCollapsed', 'true');
+                }
+            });
+
+            // Handle keyboard navigation
+            sidebarToggle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    sidebarToggle.click();
+                }
+            });
+
+            // Auto-collapse on mobile for better UX
+            function handleResize() {
+                if (window.innerWidth < 768 && !sidebar.classList.contains('sidebar-collapsed')) {
+                    sidebar.classList.add('sidebar-collapsed');
+                    body.classList.add('body-collapsed');
+                    mainContent.classList.add('content-expanded');
+                    sidebarToggle.setAttribute('aria-expanded', 'false');
+                    menuIcon.style.display = 'block';
+                    closeIcon.style.display = 'none';
+                }
+            }
+
+            // Check on load and resize
+            handleResize();
+            window.addEventListener('resize', handleResize);
+        })();
+    </script>
+</body>
+</html>

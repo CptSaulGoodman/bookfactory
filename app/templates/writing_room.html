@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('writing_chapter') }} {{ chapter.chapter_number }}{% endblock %}
+
+{% block content %}
+<div class="chapter-writing-container">
+    <header class="chapter-header">
+        <h1 class="chapter-title">{{ chapter.title }}</h1>
+        <h2 class="chapter-subtitle">{{ book.title }} - {{ _('chapter') }} {{ chapter.chapter_number }}</h2>
+        <p class="chapter-synopsis">{{ chapter.synopsis }}</p>
+    </header>
+
+    <!-- This div will be replaced by the streaming content -->
+    <div id="writing-interface">
+        
+        <!-- This is where the streamed content will appear. -->
+        <div id="chapter-content" class="chapter-content-container">
+            {% if formatted_content %}{{ formatted_content | safe }}{% endif %}
+        </div>
+
+
+
+        <!-- This form will be hidden after submission -->
+        <div id="form-container">
+            {% if chapter.status != 'completed' %}
+            <form id="chapter-form" class="chapter-form">
+                <input type="hidden" name="part" id="part_input" value="{% if chapter.status == 'draft' %}1{% elif chapter.status == 'part1_completed' %}2{% endif %}">
+                <div class="form-group">
+                    <div class="label-toggle-container">
+                        <label for="user_directives">{% if chapter.status == 'draft' %}{{ _('chapter_directives_prompt') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_prompt') }}{% endif %}</label>
+                        <button type="button" id="form-toggle" class="form-toggle-btn" title="Toggle form visibility">
+                            <span class="caret-down">▼</span>
+                            <span class="caret-up" style="display: none;">▲</span>
+                        </button>
+                    </div>
+                    <div id="form-content">
+                        <textarea id="user_directives" name="user_directives" class="form-control" rows="5" 
+                                        placeholder="{% if chapter.status == 'draft' %}{{ _('chapter_directives_placeholder') }}{% elif chapter.status == 'part1_completed' %}{{ _('chapter_continue_placeholder') }}{% endif %}"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div style="flex: 1;">
+                    {% set previous_chapter_id = previous_chapter_id if previous_chapter_id else none %}
+                    {% set next_chapter_id = next_chapter_id if next_chapter_id else none %}
+                    {% include "_chapter_navigation.html" with context %}
+                    </div>
+                    <div style="flex: 2; text-align: right;">
+                        <button type="submit" class="btn btn-secondary" id="rewrite_button" style="display: none;">{{ _('rewrite') }}</button>
+                        <button type="submit" class="btn btn-primary" id="continue_writing_button" style="display: none;">{{ _('continue_writing') }}</button>
+                        <button type="submit" class="btn btn-primary" id="start_writing_button" style="display: none;">{{ _('start_writing') }}</button>
+                    </div>
+                </div>
+            </form>
+            {% else %}
+                {% set previous_chapter_id = previous_chapter_id if previous_chapter_id else none %}
+                {% set next_chapter_id = next_chapter_id if next_chapter_id else none %}
+                {% include "_chapter_navigation.html" with context %}
+            {% endif %}
+        </div>
+
+        <!-- Spinner shown during the request -->
+        <div class="writing-status htmx-indicator">
+             <div class="spinner"></div>
+             <p>{{ _("writing_in_progress") }}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple markdown parser for paragraphs, italic, and bold
+    function parseMarkdown(text) {
+        // Split into paragraphs (single newlines)
+        const paragraphs = text.split('\n');
+        
+        return paragraphs.map(paragraph => {
+            if (!paragraph.trim()) return '';
+            
+            // Convert **bold** to <strong>bold</strong>
+            let parsed = paragraph.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Convert *italic* to <em>italic</em>
+            parsed = parsed.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+            // convert ----- to <hr class="book-section-divider">
+            parsed = parsed.replace(/-----/g, '<hr class="book-section-divider">');
+            
+            // Wrap in paragraph tags
+            return `<p>${parsed}</p>`;
+        }).join('');
+    }
+
+    // --- State Management ---
+    let isGenerating = false;
+    let currentPart = null;
+    let currentUserDirectives = null;
+    let isAutoScrolling = true;
+    let isFormManuallyCollapsed = false;
+
+    // --- Form Toggle Logic ---
+    const formToggleBtn = document.getElementById('form-toggle');
+    const formContent = document.getElementById('form-content');
+    const caretDown = document.querySelector('.caret-down');
+    const caretUp = document.querySelector('.caret-up');
+
+    formToggleBtn.addEventListener('click', function() {
+        isFormManuallyCollapsed = !isFormManuallyCollapsed;
+        
+        if (isFormManuallyCollapsed) {
+            formContent.classList.add('collapsed');
+            formContent.classList.remove('expanded');
+            caretDown.style.display = 'none';
+            caretUp.style.display = 'inline';
+        } else {
+            formContent.classList.remove('collapsed');
+            formContent.classList.add('expanded');
+            caretDown.style.display = 'inline';
+            caretUp.style.display = 'none';
+        }
+    });
+
+    // --- Autoscroll Logic ---
+    // Scrolls to the bottom of the page if auto-scrolling is enabled.
+    function scrollToBottom() {
+        if (isAutoScrolling) {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    // When the user scrolls, check if they are at the bottom of the page.
+    // If they scroll up, auto-scrolling is disabled. If they scroll back down, it's re-enabled.
+    window.addEventListener('scroll', () => {
+        if (isGenerating) {
+            const buffer = 40; // A buffer helps prevent rounding errors.
+            const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - buffer;
+            isAutoScrolling = atBottom;
+        }
+    });
+
+    // --- Element References ---
+    const chapterForm = document.getElementById('chapter-form');
+    const partInput = document.getElementById('part_input');
+    const userDirectivesInput = document.getElementById('user_directives');
+    const formContainer = document.getElementById('form-container');
+    const writingStatus = document.querySelector('.writing-status');
+    const rewriteButton = document.getElementById('rewrite_button');
+    const startWritingButton = document.getElementById('start_writing_button');
+    const continueWritingButton = document.getElementById('continue_writing_button');
+
+    // --- Initial UI State ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialStatus = "{{ chapter.status }}";
+        if (initialStatus === 'draft') {
+            startWritingButton.style.display = 'inline-block';
+        } else if (initialStatus === 'part1_completed') {
+            continueWritingButton.style.display = 'inline-block';
+        }
+        
+        // Initialize form content as expanded
+        formContent.classList.add('expanded');
+    });
+
+    // --- Button Click Handlers ---
+    rewriteButton.addEventListener('click', function() {
+        // When rewriting, use the same part number as the previous generation.
+        if (currentPart) {
+            partInput.value = currentPart;
+        }
+    });
+
+    continueWritingButton.addEventListener('click', function() {
+        // When continuing, always set the part to '2'.
+        partInput.value = '2';
+    });
+
+    // --- Form Submission Logic ---
+    chapterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        if (isGenerating) {
+            console.warn("Generation is already in progress.");
+            return;
+        }
+        isGenerating = true;
+        isAutoScrolling = true; // Reset to true at the beginning of generation.
+
+        const formData = new FormData(this);
+        currentPart = formData.get('part');
+        currentUserDirectives = formData.get('user_directives');
+
+        // --- UI Updates: Start Generation ---
+        formContainer.classList.add('hidden');
+        rewriteButton.style.display = 'none';
+        startWritingButton.style.display = 'none';
+        continueWritingButton.style.display = 'none';
+        writingStatus.classList.add('active');
+
+        window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth'
+            });
+
+        // --- SSE Connection ---
+        const eventSource = new EventSource(`/book/{{ book.id }}/chapter/{{ chapter.chapter_number }}/generate-stream?part=${currentPart}&user_directives=${encodeURIComponent(currentUserDirectives)}`);
+        
+        let accumulatedText = document.getElementById('chapter-content').innerHTML;
+
+        eventSource.onmessage = function(event) {
+            const contentDiv = document.getElementById('chapter-content');
+            accumulatedText += event.data;
+            contentDiv.innerHTML = parseMarkdown(accumulatedText);
+            scrollToBottom();
+        };
+
+        eventSource.addEventListener('complete', function(event) {
+            eventSource.close();
+            isGenerating = false;
+
+            accumulatedText += '<hr class="book-section-divider">';
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = parseMarkdown(accumulatedText);
+            scrollToBottom();
+            
+            // --- UI Updates: End Generation ---
+            formContainer.classList.remove('hidden');
+            writingStatus.classList.remove('active');
+
+            // Conditional button visibility
+            if (currentPart === '1') {
+                // After part 1, show rewrite and continue
+                rewriteButton.style.display = 'inline-block';
+                continueWritingButton.style.display = 'inline-block';
+                startWritingButton.style.display = 'none';
+            } else if (currentPart === '2') {
+                // After part 2, only show rewrite
+                rewriteButton.style.display = 'inline-block';
+                startWritingButton.style.display = 'none';
+                continueWritingButton.style.display = 'none';
+            }
+        });
+
+        eventSource.addEventListener('error', function(event) {
+            eventSource.close();
+            isGenerating = false;
+            document.getElementById('chapter-content').innerHTML = '<p class="error">An error occurred during streaming.</p>';
+            
+            // Restore UI on error
+            formContainer.classList.remove('hidden');
+            writingStatus.classList.remove('active');
+            // Restore button visibility based on the part that failed.
+            if (currentPart === '1') {
+                // If part 1 failed, revert to the initial "start" state.
+                startWritingButton.style.display = 'inline-block';
+                rewriteButton.style.display = 'none';
+                continueWritingButton.style.display = 'none';
+            } else if (currentPart === '2') {
+                // If part 2 failed, revert to the "continue" state.
+                continueWritingButton.style.display = 'inline-block';
+                rewriteButton.style.display = 'inline-block'; // Allow rewrite of failed part 2
+                startWritingButton.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 """Configuration settings for the book generation application."""
 
 # Language Configuration (the language the book will be written in)
-LANGUAGE = "German"
+LANGUAGE = "german"
 
 # AI Provider Configuration
 # Point this to any OpenAI-compatible API endpoint
@@ -9,8 +9,11 @@ OPENAI_API_BASE = "http://192.168.22.251:8090/v1"
 OPENAI_API_KEY = "ollama"  # For Ollama, the API key can be any string
 
 # AI Model Configuration
-LLM_MODEL = "gemma-3-4b"
+LLM_MODEL = "gemma-3-27b"
 EMBEDDING_MODEL = "embedder"
+
+# Database Configuration
+DATABASE_URL = "sqlite:///book_db/bookfactory.db"
 
 # Vector Database Configuration
 DB_LOCATION = "book_db"
